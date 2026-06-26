@@ -736,7 +736,7 @@ class QRCode {
   </button>
   <!-- 헤더 우측 액션 -->
   <div class="header-actions">
-    <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px" class="sync-badge">
+    <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;cursor:pointer" class="sync-badge" onclick="openModal('dbSettingsModal')" title="DB 설정">
       <span id="dbSyncDot" class="db-sync-idle"></span>
       <span id="dbSyncLabel" style="font-size:11px;color:var(--text-muted)">v2.4.1</span>
     </div>
@@ -3028,6 +3028,71 @@ class QRCode {
   </div>
 </div>
 
+<!-- ====== MySQL 서버 설정 모달 ====== -->
+<div class="modal-overlay" id="dbSettingsModal" onclick="if(event.target===this)closeModal('dbSettingsModal')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">🗄️ 데이터베이스 설정</div>
+      <button class="modal-close" onclick="closeModal('dbSettingsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- 현재 모드 표시 -->
+      <div id="dbModeInfo" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;margin-bottom:16px;background:var(--bg-panel);border:1px solid var(--border)">
+        <span id="dbModeIcon" style="font-size:24px">💾</span>
+        <div>
+          <div id="dbModeName" style="font-size:13px;font-weight:600;color:var(--text-primary)">localStorage 모드</div>
+          <div id="dbModeDesc" style="font-size:11px;color:var(--text-muted);margin-top:2px">브라우저 내부 저장 (기기 간 공유 불가)</div>
+        </div>
+        <span id="dbModeStatus" class="db-sync-idle" style="margin-left:auto;width:10px;height:10px;border-radius:50%;display:inline-block"></span>
+      </div>
+
+      <!-- MySQL API 설정 -->
+      <div style="background:rgba(14,165,160,0.05);border:1px solid rgba(14,165,160,0.2);border-radius:10px;padding:16px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px">🗄️ MySQL API 서버 연결</div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label class="form-label">API 서버 URL</label>
+          <input class="form-input" id="dbApiUrl" placeholder="http://localhost:3001" style="padding:7px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">
+        </div>
+        <div class="form-row" style="margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">인증 토큰 (선택)</label>
+            <input class="form-input" id="dbApiToken" placeholder="Bearer token..." type="password" style="padding:7px 10px;font-size:12px">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">타임아웃 (초)</label>
+            <input class="form-input" id="dbApiTimeout" type="number" value="10" min="3" max="60" style="padding:7px 10px">
+          </div>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;font-size:12px;margin-bottom:8px" onclick="testApiConnection()">
+          🔌 연결 테스트
+        </button>
+        <div id="dbTestResult" style="font-size:12px;display:none;padding:8px 12px;border-radius:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1;font-size:12px" onclick="enableMysqlMode()">MySQL 모드 활성화</button>
+          <button class="btn btn-ghost" style="flex:1;font-size:12px" onclick="disableMysqlMode()">localStorage 모드로 전환</button>
+        </div>
+      </div>
+
+      <!-- 데이터 마이그레이션 -->
+      <div style="background:rgba(59,123,246,0.05);border:1px solid rgba(59,123,246,0.2);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">📦 데이터 마이그레이션</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;line-height:1.6">
+          localStorage의 기존 데이터를 MySQL 서버로 이전합니다.<br>
+          MySQL 모드 활성화 후 사용하세요.
+        </div>
+        <button class="btn btn-ghost" style="width:100%;font-size:12px;border-color:var(--accent2);color:var(--accent2)" onclick="migrateToMySQL()">
+          📤 localStorage → MySQL 마이그레이션
+        </button>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('dbSettingsModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ====== 데이터 가져오기 확인 모달 (개발기간 임시) ====== -->
 <div class="modal-overlay" id="importConfirmModal">
   <div class="modal" style="max-width:400px">
@@ -3414,11 +3479,12 @@ class QRCode {
    ▸ 로그아웃해도 데이터 유지, 다음 로그인 시 즉시 복원
    ================================================================ */
 
-const LS_DATA_KEY  = 'eqx_data';   // 텍스트 데이터 (경량)
+const LS_DATA_KEY  = 'eqx_data';
 const LS_VER_KEY   = 'eqx_ver';
-const LS_FILES_KEY = 'eqx_files';  // 파일 base64 별도 저장
+const LS_FILES_KEY = 'eqx_files';
+const LS_DB_CFG    = 'eqx_db_cfg';   // MySQL 설정 저장
 
-// 인메모리 캐시
+/* ── 인메모리 캐시 ── */
 let equipment    = [];
 let reservations = [];
 let historyData  = [];
@@ -3429,58 +3495,171 @@ let manualDocs   = [];
 let faultRecords = [];
 let _dbReady     = false;
 
-/* ── 빈 DB 구조 ── */
 const emptyDB = () => ({
   equipment: [], reservations: [], historyData: [],
   safetyItems: [], qrData: [], activityLog: [], manualDocs: [], faultRecords: [], _ver: Date.now()
 });
 
-/* ── 로딩 오버레이 ── */
-function showDBLoader(msg) {
-  document.getElementById('dbLoader').style.display = 'flex';
-  document.getElementById('dbLoaderMsg').textContent = msg || '데이터 불러오는 중…';
-}
-function hideDBLoader() {
-  document.getElementById('dbLoader').style.display = 'none';
-}
+/* ══════════════════════════════════════════════════
+   MySQL API 설정
+   ══════════════════════════════════════════════════ */
+let _dbCfg = {
+  mode:    'local',         // 'local' | 'mysql'
+  apiUrl:  '',              // http://localhost:3001
+  token:   '',              // Bearer token (선택)
+  timeout: 10,              // 초
+};
 
-/* ── 동기화 상태 표시 ── */
-function setSyncStatus(state, msg) {
-  const dot   = document.getElementById('dbSyncDot');
-  const label = document.getElementById('dbSyncLabel');
-  if (!dot || !label) return;
-  dot.className     = `db-sync-${state}`;
-  label.textContent = msg;
-  if (state === 'ok') {
-    setTimeout(() => {
-      dot.className     = 'db-sync-idle';
-      label.textContent = 'v2.4.1 · 저장됨';
-    }, 2000);
+function _loadDbCfg() {
+  try {
+    const s = localStorage.getItem(LS_DB_CFG);
+    if (s) Object.assign(_dbCfg, JSON.parse(s));
+  } catch {}
+}
+function _saveDbCfg() {
+  try { localStorage.setItem(LS_DB_CFG, JSON.stringify(_dbCfg)); } catch {}
+}
+_loadDbCfg();
+
+/* API 공통 fetch (타임아웃 + 인증 헤더 포함) */
+async function _apiFetch(path, opts = {}) {
+  const url         = _dbCfg.apiUrl.replace(/\/$/, '') + path;
+  const controller  = new AbortController();
+  const timer       = setTimeout(() => controller.abort(), _dbCfg.timeout * 1000);
+  const headers     = { 'Content-Type': 'application/json' };
+  if (_dbCfg.token) headers['Authorization'] = _dbCfg.token.startsWith('Bearer') ? _dbCfg.token : `Bearer ${_dbCfg.token}`;
+  try {
+    const resp = await fetch(url, { ...opts, headers: { ...headers, ...(opts.headers||{}) }, signal: controller.signal });
+    clearTimeout(timer);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.json();
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
   }
 }
 
-/* ═══════════════════════════════════════════
-   파일 분리 저장 전략
-   ─────────────────────────────────────────
-   문제: 장비 사진·매뉴얼·고장원인 파일의
-         base64 데이터가 localStorage 5MB 한도 초과
-   해결:
-     eqx_data  → base64 제거한 경량 텍스트 데이터
-     eqx_files → {uid: base64} 파일 데이터만 별도 저장
-     로드 시    → 두 키를 합쳐 인메모리 복원
-   ═══════════════════════════════════════════ */
+/* ── MySQL API CRUD ── */
+async function _apiLoad() {
+  return await _apiFetch('/api/load');
+}
 
-/* base64 필드 목록 (각 레코드에서 추출/복원할 필드) */
+async function _apiSave(payload) {
+  return await _apiFetch('/api/save', {
+    method: 'POST',
+    body:   JSON.stringify(payload),
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   UI — DB 설정 모달 제어
+   ══════════════════════════════════════════════════ */
+function _updateDbModeUI() {
+  const isMysql = _dbCfg.mode === 'mysql';
+  const iconEl  = document.getElementById('dbModeIcon');
+  const nameEl  = document.getElementById('dbModeName');
+  const descEl  = document.getElementById('dbModeDesc');
+  const statEl  = document.getElementById('dbModeStatus');
+  const dotEl   = document.getElementById('dbSyncDot');
+
+  if (iconEl) iconEl.textContent  = isMysql ? '🗄️' : '💾';
+  if (nameEl) nameEl.textContent  = isMysql ? 'MySQL 모드' : 'localStorage 모드';
+  if (descEl) descEl.textContent  = isMysql
+    ? `MySQL API: ${_dbCfg.apiUrl} (기기 간 공유 가능)`
+    : '브라우저 내부 저장 (기기 간 공유 불가)';
+  if (statEl) statEl.className    = isMysql ? 'db-sync-ok' : 'db-sync-idle';
+  if (dotEl)  dotEl.className     = isMysql ? 'db-sync-ok' : 'db-sync-idle';
+
+  // URL/토큰 입력 필드 채우기
+  const urlEl     = document.getElementById('dbApiUrl');
+  const tokenEl   = document.getElementById('dbApiToken');
+  const timeoutEl = document.getElementById('dbApiTimeout');
+  if (urlEl)     urlEl.value     = _dbCfg.apiUrl;
+  if (tokenEl)   tokenEl.value   = _dbCfg.token;
+  if (timeoutEl) timeoutEl.value = _dbCfg.timeout;
+}
+
+async function testApiConnection() {
+  const url     = document.getElementById('dbApiUrl')?.value.trim();
+  const token   = document.getElementById('dbApiToken')?.value.trim();
+  const timeout = parseInt(document.getElementById('dbApiTimeout')?.value) || 10;
+  const resEl   = document.getElementById('dbTestResult');
+
+  if (!url) { _showTestResult('⚠️ API URL을 입력하세요', false); return; }
+
+  _showTestResult('🔌 연결 테스트 중…', null);
+  const prev = { ..._dbCfg };
+  _dbCfg.apiUrl = url; _dbCfg.token = token; _dbCfg.timeout = timeout;
+
+  try {
+    const data = await _apiFetch('/api/ping');
+    _showTestResult(`✅ 연결 성공! 서버: ${data.server || 'Equipment-X API'} · DB: ${data.db || 'MySQL'}`, true);
+  } catch (e) {
+    Object.assign(_dbCfg, prev);
+    _showTestResult(`❌ 연결 실패: ${e.message} — API 서버가 실행 중인지 확인하세요`, false);
+  }
+}
+
+function _showTestResult(msg, ok) {
+  const el = document.getElementById('dbTestResult');
+  if (!el) return;
+  el.style.display    = '';
+  el.style.background = ok === null ? 'rgba(59,123,246,0.08)' : ok ? 'rgba(5,150,105,0.08)' : 'rgba(220,38,38,0.08)';
+  el.style.border     = `1px solid ${ok === null ? 'rgba(59,123,246,0.2)' : ok ? 'rgba(5,150,105,0.2)' : 'rgba(220,38,38,0.2)'}`;
+  el.style.color      = ok === null ? 'var(--accent2)' : ok ? 'var(--status-ok)' : 'var(--danger)';
+  el.textContent      = msg;
+}
+
+function enableMysqlMode() {
+  const url     = document.getElementById('dbApiUrl')?.value.trim();
+  const token   = document.getElementById('dbApiToken')?.value.trim();
+  const timeout = parseInt(document.getElementById('dbApiTimeout')?.value) || 10;
+  if (!url) { _showTestResult('⚠️ API URL을 먼저 입력하세요', false); return; }
+  _dbCfg = { mode:'mysql', apiUrl: url, token, timeout };
+  _saveDbCfg();
+  _updateDbModeUI();
+  setSyncStatus('ok', 'MySQL 모드');
+  showToast('🗄️', 'MySQL 모드 활성화됨. 다음 저장부터 적용됩니다.');
+  closeModal('dbSettingsModal');
+}
+
+function disableMysqlMode() {
+  _dbCfg.mode = 'local';
+  _saveDbCfg();
+  _updateDbModeUI();
+  setSyncStatus('idle', 'localStorage 모드');
+  showToast('💾', 'localStorage 모드로 전환되었습니다.');
+}
+
+async function migrateToMySQL() {
+  if (_dbCfg.mode !== 'mysql') {
+    showToast('⚠️', 'MySQL 모드를 먼저 활성화하세요'); return;
+  }
+  if (!confirm('현재 localStorage 데이터를 MySQL 서버로 이전하시겠습니까?\n서버의 기존 데이터가 덮어써집니다.')) return;
+
+  setSyncStatus('ok', '마이그레이션 중…');
+  try {
+    const payload = buildPayload();
+    await _apiSave(payload);
+    setSyncStatus('ok', 'MySQL 마이그레이션 완료 ✓');
+    showToast('✅', `마이그레이션 완료! 장비 ${equipment.length}대 외 전체 데이터가 MySQL에 저장되었습니다.`);
+  } catch (e) {
+    setSyncStatus('err', '마이그레이션 실패');
+    showToast('❌', `마이그레이션 실패: ${e.message}`);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   파일 분리 저장 (localStorage용)
+   ══════════════════════════════════════════════════ */
 const FILE_FIELDS = {
-  equipment:   ['photo'],
-  manualDocs:  ['fileB64'],
-  faultRecords:['fileB64'],
+  equipment:    ['photo'],
+  manualDocs:   ['fileB64'],
+  faultRecords: ['fileB64'],
 };
 
-/* 데이터에서 파일 분리: base64 제거 + 파일 맵 반환 */
 function _stripFiles(payload) {
   const files = {};
-
   const stripArr = (arr, prefix, fields) =>
     (arr || []).map(item => {
       const clean = { ...item };
@@ -3495,29 +3674,24 @@ function _stripFiles(payload) {
       return clean;
     });
 
-  // historyData: M2 유지보수 사진 배열 처리
   const lightHistory = (payload.historyData || []).map(h => {
     if (h.mType !== 'M2') return h;
     const ch = { ...h };
     if (ch.repairPhotos?.length) {
       ch.repairPhotos = ch.repairPhotos.map((p, i) => {
         const fkey = `hist__${h._uid || Math.random().toString(36).slice(2)}__rp${i}`;
-        files[fkey] = p;
-        return { _fkey: fkey };
+        files[fkey] = p; return { _fkey: fkey };
       });
     }
     if (ch.partsPhotos?.length) {
       ch.partsPhotos = ch.partsPhotos.map((p, i) => {
         const fkey = `hist__${h._uid || Math.random().toString(36).slice(2)}__pp${i}`;
-        files[fkey] = p;
-        return { _fkey: fkey };
+        files[fkey] = p; return { _fkey: fkey };
       });
     }
     if (ch.perfFileB64) {
       const fkey = `hist__${h._uid || Math.random().toString(36).slice(2)}__perf`;
-      files[fkey] = ch.perfFileB64;
-      delete ch.perfFileB64;
-      ch._fkey_perfFileB64 = fkey;
+      files[fkey] = ch.perfFileB64; delete ch.perfFileB64; ch._fkey_perfFileB64 = fkey;
     }
     return ch;
   });
@@ -3534,10 +3708,8 @@ function _stripFiles(payload) {
   };
 }
 
-/* 파일 맵으로 base64 복원 */
 function _restoreFiles(light, files) {
   if (!files || !Object.keys(files).length) return light;
-
   const restoreArr = (arr, fields) =>
     (arr || []).map(item => {
       const r = { ...item };
@@ -3547,7 +3719,6 @@ function _restoreFiles(light, files) {
       }
       return r;
     });
-
   const restoredHistory = (light.historyData || []).map(h => {
     if (h.mType !== 'M2') return h;
     const r = { ...h };
@@ -3556,7 +3727,6 @@ function _restoreFiles(light, files) {
     if (r._fkey_perfFileB64 && files[r._fkey_perfFileB64]) { r.perfFileB64 = files[r._fkey_perfFileB64]; delete r._fkey_perfFileB64; }
     return r;
   });
-
   return {
     ...light,
     equipment:    restoreArr(light.equipment,    ['photo']),
@@ -3566,23 +3736,17 @@ function _restoreFiles(light, files) {
   };
 }
 
-/* ── localStorage 저장 (분리 방식) ── */
+/* ── localStorage 저장 ── */
 function lsSave(data) {
   try {
     data._ver = Date.now();
     const { light, files } = _stripFiles(data);
-
-    // 1. 텍스트 데이터 저장 (경량)
     localStorage.setItem(LS_DATA_KEY, JSON.stringify(light));
     localStorage.setItem(LS_VER_KEY,  String(data._ver));
-
-    // 2. 파일 데이터 저장 (별도 키, 실패해도 텍스트는 보존)
     try {
       if (Object.keys(files).length > 0) {
-        // 기존 파일 맵과 병합 (삭제된 항목 정리)
         const existFiles = _loadFiles();
         const merged = { ...existFiles, ...files };
-        // 현재 유효한 _fkey 만 유지 (고아 파일 정리)
         const validKeys = new Set();
         [light.equipment, light.manualDocs, light.faultRecords].forEach(arr =>
           (arr||[]).forEach(item =>
@@ -3590,33 +3754,25 @@ function lsSave(data) {
           )
         );
         const cleaned = {};
-        for (const k of Object.keys(merged)) {
-          if (validKeys.has(k)) cleaned[k] = merged[k];
-        }
+        for (const k of Object.keys(merged)) { if (validKeys.has(k)) cleaned[k] = merged[k]; }
         localStorage.setItem(LS_FILES_KEY, JSON.stringify(cleaned));
       }
-    } catch (fe) {
-      // 파일 저장 실패 시 용량 절감 시도: 이미지 압축
-      console.warn('파일 저장 실패, 기존 파일 유지:', fe);
-    }
+    } catch (fe) { console.warn('파일 저장 실패:', fe); }
     return true;
   } catch (e) {
     if (e.name === 'QuotaExceededError') {
-      // 최후 수단: 파일 없이 텍스트만 저장
       try {
         const { light } = _stripFiles(data);
         localStorage.setItem(LS_DATA_KEY, JSON.stringify(light));
-        setSyncStatus('err', '저장됨 (파일 용량 초과 — 텍스트만 저장)');
-        showToast('⚠️', '저장공간이 부족합니다. 불필요한 파일을 삭제해 주세요.');
+        setSyncStatus('err', '저장됨 (파일 용량 초과)');
+        showToast('⚠️', '저장공간이 부족합니다.');
         return true;
       } catch { return false; }
     }
-    console.warn('localStorage 저장 실패:', e);
     return false;
   }
 }
 
-/* ── localStorage 로드 (파일 복원 포함) ── */
 function _loadFiles() {
   try { return JSON.parse(localStorage.getItem(LS_FILES_KEY) || '{}'); } catch { return {}; }
 }
@@ -3626,12 +3782,11 @@ function lsLoad() {
     const raw = localStorage.getItem(LS_DATA_KEY);
     if (!raw) return null;
     const light = JSON.parse(raw);
-    const files = _loadFiles();
-    return _restoreFiles(light, files);
+    return _restoreFiles(light, _loadFiles());
   } catch { return null; }
 }
 
-/* ── 레코드 → 인메모리 변수 적용 ── */
+/* ── 레코드 적용 / 빌드 ── */
 function applyRecord(rec) {
   equipment    = rec.equipment    || [];
   reservations = rec.reservations || [];
@@ -3643,33 +3798,54 @@ function applyRecord(rec) {
   faultRecords = rec.faultRecords || [];
 }
 
-/* ── 현재 변수 → 저장 객체 ── */
 function buildPayload() {
   return { equipment, reservations, historyData, safetyItems, qrData, activityLog, manualDocs, faultRecords };
 }
 
-/* ═══════════════════════════════════════════
-   initDB — 로그인 후 호출
-   localStorage 데이터가 있으면 즉시 복원
-   없으면 빈 DB로 시작
-   ═══════════════════════════════════════════ */
-function initDB() {
+/* ══════════════════════════════════════════════════
+   initDB — MySQL 우선, 실패 시 localStorage 폴백
+   ══════════════════════════════════════════════════ */
+async function initDB() {
   showDBLoader('데이터 불러오는 중…');
 
+  if (_dbCfg.mode === 'mysql' && _dbCfg.apiUrl) {
+    // ── MySQL API 로드 시도
+    showDBLoader('MySQL 서버에서 불러오는 중…');
+    setSyncStatus('ok', 'MySQL 연결 중…');
+    try {
+      const data = await _apiLoad();
+      applyRecord(data);
+      // localStorage에도 백업
+      lsSave(buildPayload());
+      setSyncStatus('ok', '🗄️ MySQL 동기화 완료 ✓');
+      _finishInitDB();
+      return;
+    } catch (e) {
+      console.warn('MySQL 로드 실패, localStorage 폴백:', e);
+      setSyncStatus('err', `MySQL 실패 — localStorage 사용 중`);
+      showToast('⚠️', `MySQL 연결 실패 (${e.message}). localStorage로 대체합니다.`);
+    }
+  }
+
+  // ── localStorage 로드
   const cached = lsLoad();
   if (cached) {
     applyRecord(cached);
-    setSyncStatus('ok', '데이터 복원됨 ✓');
+    setSyncStatus(_dbCfg.mode === 'mysql' ? 'err' : 'idle', _dbCfg.mode === 'mysql' ? '⚠️ MySQL 실패 · 로컬 데이터' : 'v2.4.1 · 저장됨');
   } else {
     applyRecord(emptyDB());
     setSyncStatus('idle', 'v2.4.1 · 새 데이터');
   }
 
+  _finishInitDB();
+}
+
+function _finishInitDB() {
   _dbReady = true;
+  _updateDbModeUI();
   hideDBLoader();
   refreshAllViews();
   _fireLoginLog();
-  // QR 스캔으로 진입한 경우 장비 팝업 자동 표시
   _openQRScanPopupIfPending();
 }
 
@@ -3681,20 +3857,29 @@ function _fireLoginLog() {
   }
 }
 
-/* ═══════════════════════════════════════════
-   saveDB — 모든 CRUD 후 호출
-   localStorage에 즉시 저장 (동기, 항상 성공)
-   ═══════════════════════════════════════════ */
-function saveDB(optimisticFn) {
+/* ══════════════════════════════════════════════════
+   saveDB — MySQL 우선, 실패 시 localStorage 폴백
+   ══════════════════════════════════════════════════ */
+async function saveDB(optimisticFn) {
   if (optimisticFn) optimisticFn();
 
   const payload = buildPayload();
-  const ok = lsSave(payload);
-  setSyncStatus(ok ? 'ok' : 'err', ok ? '저장됨 ✓' : '저장 실패 (저장공간 부족)');
-}
 
-function showDBError(msg) {
-  showToast('🔴', `오류: ${msg}`);
+  // 항상 localStorage에 즉시 저장 (오프라인 백업)
+  lsSave(payload);
+
+  if (_dbCfg.mode === 'mysql' && _dbCfg.apiUrl) {
+    setSyncStatus('ok', '🗄️ MySQL 저장 중…');
+    try {
+      await _apiSave(payload);
+      setSyncStatus('ok', '🗄️ MySQL 저장됨 ✓');
+    } catch (e) {
+      setSyncStatus('err', `⚠️ MySQL 실패 · 로컬 저장됨`);
+      console.warn('MySQL 저장 실패:', e);
+    }
+  } else {
+    setSyncStatus('ok', '저장됨 ✓');
+  }
 }
 
 /* ── 모든 뷰 갱신 ── */
