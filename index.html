@@ -547,101 +547,62 @@ class QRCode {
   .dropdown-item.locked{opacity:0.35;cursor:not-allowed;pointer-events:none;}
   .dropdown-divider{height:1px;background:var(--border);margin:4px 8px;}
   .dropdown-label{padding:6px 18px 3px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.2px;}
-  @media (max-width:768px){.topnav{display:none;}}
+  @media (max-width:1023px){.topnav{display:none;}}
+
+  /* ── 태블릿 햄버거 (기본 숨김) ── */
+  .tablet-hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:38px;height:38px;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:6px;flex-shrink:0;transition:all 0.2s;}
+  .tablet-hamburger span{display:block;width:18px;height:2px;background:var(--text-secondary);border-radius:2px;transition:all 0.2s;}
+  .tablet-hamburger:hover{background:var(--bg-panel);border-color:var(--border-light);}
+
+  /* ── 스마트폰 2행 헤더 (기본 숨김) ── */
+  .mobile-header-row2{display:none;position:fixed;top:var(--header-h);left:0;right:0;height:42px;background:#fff;border-bottom:1px solid var(--border);padding:0 12px;align-items:center;gap:8px;z-index:89;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 
   /* ════════════════════════════════════════
-     반응형 — 태블릿 (768px ~ 1023px)
+     태블릿 (768px ~ 1023px)
   ════════════════════════════════════════ */
   @media (min-width:768px) and (max-width:1023px) {
-    /* 헤더 */
-    .header { padding:0 14px; gap:8px; }
-    /* 드롭다운 버튼 폰트 축소 */
-    .topnav-btn { font-size:15px; padding:6px 10px; }
-    /* 헤더 우측 일부 숨김 */
-    .user-name { display:none; }
-    /* 메인 패딩 */
-    .main { padding:16px; }
-    /* 통계 카드 2열 */
-    .stat-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
-    /* 콘텐츠 그리드 단일 열 */
-    .content-grid { grid-template-columns:1fr; }
-    /* 폼 1열 */
-    .form-row { grid-template-columns:1fr 1fr; }
-    /* 바텀 네비 표시 */
-    .bottom-nav { display:flex; }
-    /* 바텀 네비 공간 확보 */
-    .main { padding-bottom:72px; }
+    .tablet-hamburger{display:flex;}
+    .sync-badge,.data-btns{display:none;}
+    .user-name,.user-role-tag{display:none;}
+    .header{padding:0 14px;gap:8px;}
+    .main{padding:16px;padding-bottom:72px;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
+    .content-grid{grid-template-columns:1fr;}
+    .bottom-nav{display:flex;}
   }
 
   /* ════════════════════════════════════════
-     반응형 — 스마트폰 (~ 767px)
+     스마트폰 (~ 767px)
   ════════════════════════════════════════ */
   @media (max-width:767px) {
-    :root { --header-h:52px; }
-
-    /* 헤더 */
-    .header { padding:0 12px; gap:6px; overflow:visible; }
-    .topnav  { display:none; }
-
-    /* 헤더 우측 간소화 */
-    .user-name    { display:none; }
-    .user-role-tag{ display:none; }
-    .header-actions > div:first-child { display:none; } /* sync badge 숨김 */
-
-    /* 내보내기/가져오기 버튼 아이콘만 표시 */
-    .header-actions .btn span { display:none; }
-
-    /* 메인 */
-    .main {
-      padding:12px 10px;
-      padding-bottom:72px;
-    }
-
-    /* 통계 카드 2열 */
-    .stat-grid { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px; }
-    .stat-card  { padding:12px; }
-    .stat-value { font-size:22px; }
-    .stat-label { font-size:10px; }
-
-    /* 콘텐츠 단일 열 */
-    .content-grid { grid-template-columns:1fr; gap:12px; }
-
-    /* 폼 */
-    .form-row { grid-template-columns:1fr; gap:8px; }
-
-    /* 카드 */
-    .card-header { padding:12px 14px; flex-wrap:wrap; gap:8px; }
-    .card-body   { padding:12px 14px; }
-    .card-title  { font-size:13px; }
-
-    /* 테이블 가로 스크롤 */
-    .card { overflow-x:auto; }
-    .eq-table { min-width:600px; font-size:12px; }
-    .eq-table th,.eq-table td { padding:8px 10px; }
-
-    /* 모달 바텀시트 */
-    .modal-overlay { align-items:flex-end; padding:0; }
-    .modal {
-      max-width:100%;
-      border-radius:20px 20px 0 0;
-      max-height:90vh;
-    }
-    .modal-header { padding:14px 18px; }
-    .modal-body   { padding:14px 18px; }
-    .modal-footer { padding:12px 18px; }
-    @keyframes slide-up {
-      from { transform:translateY(100%); opacity:1; }
-      to   { transform:translateY(0);    opacity:1; }
-    }
-
-    /* AI 채팅 높이 축소 */
-    .ai-chat-area { height:200px; }
-
-    /* 바텀 네비 */
-    .bottom-nav { display:flex; }
-
-    /* 로그인 화면 */
-    .login-body { padding:20px 16px; }
+    :root{--header-h:50px;}
+    .header{padding:0 12px;gap:8px;}
+    .tablet-hamburger{display:flex;}
+    .sync-badge,.data-btns,.notif-btn,.user-chip{display:none!important;}
+    .header-actions>button{display:none;}
+    .mobile-header-row2{display:flex;}
+    .main{margin-top:calc(var(--header-h) + 42px)!important;padding:12px 10px;padding-bottom:72px;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px;}
+    .stat-card{padding:12px;}
+    .stat-value{font-size:22px;}
+    .stat-label{font-size:10px;}
+    .content-grid{grid-template-columns:1fr;gap:12px;}
+    .form-row{grid-template-columns:1fr;gap:8px;}
+    .card-header{padding:10px 14px;flex-wrap:wrap;gap:6px;}
+    .card-body{padding:12px 14px;}
+    .card-title{font-size:13px;}
+    .card{overflow-x:auto;}
+    .eq-table{min-width:560px;font-size:12px;}
+    .eq-table th,.eq-table td{padding:8px 10px;}
+    .modal-overlay{align-items:flex-end;padding:0;}
+    .modal{max-width:100%;border-radius:20px 20px 0 0;max-height:90vh;}
+    .modal-header{padding:14px 18px;}
+    .modal-body{padding:14px 18px;}
+    .modal-footer{padding:12px 18px;}
+    @keyframes slide-up{from{transform:translateY(100%);opacity:1}to{transform:translateY(0);opacity:1}}
+    .ai-chat-area{height:200px;}
+    .bottom-nav{display:flex;}
+    .login-body{padding:20px 16px;}
   }
 </style>
 </head>
@@ -728,8 +689,7 @@ class QRCode {
 </div>
 
 <!-- HEADER -->
-<header class="header" style="left:0">
-  <!-- 로고 -->
+<header class="header" id="mainHeader">
   <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
     <div class="logo-icon">EX</div>
     <div style="display:flex;flex-direction:column;line-height:1">
@@ -737,101 +697,55 @@ class QRCode {
       <span style="font-size:9px;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:1.5px">MGMT SYSTEM</span>
     </div>
   </div>
-
-  <!-- 드롭다운 네비게이션 (데스크탑) -->
   <nav class="topnav" id="topnav">
-
-    <!-- 현황 -->
     <div class="topnav-group" id="tng-status">
-      <button class="topnav-btn" onclick="toggleDropdown('tng-status', event)">
-        장비 현황 <span class="nav-arrow">▼</span>
-      </button>
+      <button class="topnav-btn" onclick="toggleDropdown('tng-status', event)">장비 현황 <span class="nav-arrow">▼</span></button>
       <div class="dropdown" onclick="event.stopPropagation()">
         <div class="dropdown-label">현황</div>
-        <div class="dropdown-item" id="dd-dashboard" onclick="goTo('dashboard');closeAllDropdowns()">
-          <span>📊</span> 장비 상태 대시보드
-        </div>
-        <div class="dropdown-item" id="dd-safety" onclick="goTo('safety');closeAllDropdowns()">
-          <span>📋</span> 장비별 이력 현황
-        </div>
+        <div class="dropdown-item" id="dd-dashboard" onclick="goTo('dashboard');closeAllDropdowns()"><span>📊</span> 장비 상태 대시보드</div>
+        <div class="dropdown-item" id="dd-safety" onclick="goTo('safety');closeAllDropdowns()"><span>📋</span> 장비별 이력 현황</div>
       </div>
     </div>
-
-    <!-- 관리 -->
     <div class="topnav-group" id="tng-mgmt">
-      <button class="topnav-btn" onclick="toggleDropdown('tng-mgmt', event)">
-        관리 <span class="nav-arrow">▼</span>
-      </button>
+      <button class="topnav-btn" onclick="toggleDropdown('tng-mgmt', event)">관리 <span class="nav-arrow">▼</span></button>
       <div class="dropdown" onclick="event.stopPropagation()">
         <div class="dropdown-label">관리</div>
-        <div class="dropdown-item" id="dd-reservation" onclick="goTo('reservation');closeAllDropdowns()">
-          <span>📅</span> 사용 예약
-        </div>
+        <div class="dropdown-item" id="dd-reservation" onclick="goTo('reservation');closeAllDropdowns()"><span>📅</span> 사용 예약</div>
         <div class="dropdown-divider"></div>
         <div class="dropdown-label">관리자 전용</div>
-        <div class="dropdown-item admin-only locked" id="dd-assets" onclick="goTo('assets');closeAllDropdowns()">
-          <span>🏷️</span> 장비 등록·관리
-          <span style="margin-left:auto;font-size:10px" id="ddlock-assets">🔒</span>
-        </div>
-        <div class="dropdown-item admin-only locked" id="dd-safety-mgmt" onclick="goTo('safety-mgmt');closeAllDropdowns()">
-          <span>✅</span> 점검기록 관리
-          <span style="margin-left:auto;font-size:10px" id="ddlock-safety-mgmt">🔒</span>
-        </div>
-        <div class="dropdown-item admin-only locked" id="dd-manual-mgmt" onclick="goTo('manual-mgmt');closeAllDropdowns()">
-          <span>📚</span> 매뉴얼 관리
-          <span style="margin-left:auto;font-size:10px" id="ddlock-manual-mgmt">🔒</span>
-        </div>
-        <div class="dropdown-item admin-only locked" id="dd-fault-mgmt" onclick="goTo('fault-mgmt');closeAllDropdowns()">
-          <span>🔧</span> 고장원인 관리
-          <span style="margin-left:auto;font-size:10px" id="ddlock-fault-mgmt">🔒</span>
-        </div>
-        <div class="dropdown-item admin-only locked" id="dd-qr" onclick="goTo('qr');closeAllDropdowns()">
-          <span>📷</span> QR 생성·관리
-          <span style="margin-left:auto;font-size:10px" id="ddlock-qr">🔒</span>
-        </div>
+        <div class="dropdown-item admin-only locked" id="dd-assets" onclick="goTo('assets');closeAllDropdowns()"><span>🏷️</span> 장비 등록·관리<span style="margin-left:auto;font-size:10px" id="ddlock-assets">🔒</span></div>
+        <div class="dropdown-item admin-only locked" id="dd-safety-mgmt" onclick="goTo('safety-mgmt');closeAllDropdowns()"><span>✅</span> 점검기록 관리<span style="margin-left:auto;font-size:10px" id="ddlock-safety-mgmt">🔒</span></div>
+        <div class="dropdown-item admin-only locked" id="dd-manual-mgmt" onclick="goTo('manual-mgmt');closeAllDropdowns()"><span>📚</span> 매뉴얼 관리<span style="margin-left:auto;font-size:10px" id="ddlock-manual-mgmt">🔒</span></div>
+        <div class="dropdown-item admin-only locked" id="dd-fault-mgmt" onclick="goTo('fault-mgmt');closeAllDropdowns()"><span>🔧</span> 고장원인 관리<span style="margin-left:auto;font-size:10px" id="ddlock-fault-mgmt">🔒</span></div>
+        <div class="dropdown-item admin-only locked" id="dd-qr" onclick="goTo('qr');closeAllDropdowns()"><span>📷</span> QR 생성·관리<span style="margin-left:auto;font-size:10px" id="ddlock-qr">🔒</span></div>
       </div>
     </div>
-
-    <!-- 교육 -->
     <div class="topnav-group" id="tng-edu">
-      <button class="topnav-btn" onclick="toggleDropdown('tng-edu', event)">
-        교육 <span class="nav-arrow">▼</span>
-      </button>
+      <button class="topnav-btn" onclick="toggleDropdown('tng-edu', event)">교육 <span class="nav-arrow">▼</span></button>
       <div class="dropdown" onclick="event.stopPropagation()">
         <div class="dropdown-label">교육·AI</div>
-        <div class="dropdown-item" id="dd-manual" onclick="goTo('manual');closeAllDropdowns()">
-          <span>📖</span> 매뉴얼 AI 검색
-        </div>
-        <div class="dropdown-item" id="dd-fault" onclick="goTo('fault');closeAllDropdowns()">
-          <span>🔍</span> 고장 원인 추적
-        </div>
-        <div class="dropdown-item" id="dd-twin" onclick="goTo('twin');closeAllDropdowns()">
-          <span>🌐</span> 반응형 3D 매뉴얼
-        </div>
+        <div class="dropdown-item" id="dd-manual" onclick="goTo('manual');closeAllDropdowns()"><span>📖</span> 매뉴얼 AI 검색</div>
+        <div class="dropdown-item" id="dd-fault" onclick="goTo('fault');closeAllDropdowns()"><span>🔍</span> 고장 원인 AI 검색</div>
+        <div class="dropdown-item" id="dd-twin" onclick="goTo('twin');closeAllDropdowns()"><span>🌐</span> 반응형 3D 매뉴얼</div>
       </div>
     </div>
-
   </nav>
-
+  <!-- 태블릿 햄버거 -->
+  <button class="tablet-hamburger" id="tabletHamburger" onclick="toggleTabletDrawer()" title="메뉴">
+    <span></span><span></span><span></span>
+  </button>
   <!-- 헤더 우측 액션 -->
   <div class="header-actions">
-    <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px">
+    <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px" class="sync-badge">
       <span id="dbSyncDot" class="db-sync-idle"></span>
       <span id="dbSyncLabel" style="font-size:11px;color:var(--text-muted)">v2.4.1</span>
     </div>
-    <!-- ── 데이터 내보내기/가져오기 (개발기간 임시) ── -->
-    <div style="display:flex;gap:4px">
-      <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;gap:4px" onclick="exportData()" title="데이터 내보내기 (JSON)">
-        📤 <span>내보내기</span>
-      </button>
-      <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;gap:4px" onclick="document.getElementById('importFileInput').click()" title="데이터 가져오기 (JSON)">
-        📥 <span>가져오기</span>
-      </button>
+    <div style="display:flex;gap:4px" class="data-btns">
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;gap:4px" onclick="exportData()" title="데이터 내보내기">📤 <span>내보내기</span></button>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px;gap:4px" onclick="document.getElementById('importFileInput').click()" title="데이터 가져오기">📥 <span>가져오기</span></button>
       <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(this)">
     </div>
-    <div class="notif-btn">
-      🔔<div class="notif-badge">3</div>
-    </div>
+    <div class="notif-btn">🔔<div class="notif-badge">3</div></div>
     <div class="user-chip" onclick="openAccountSettings()">
       <div class="user-avatar avatar-admin" id="headerAvatar">A</div>
       <span class="user-name" id="headerName">관리자</span>
@@ -840,6 +754,52 @@ class QRCode {
     <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px" onclick="doLogout()">로그아웃</button>
   </div>
 </header>
+
+<!-- 스마트폰 2행 헤더 -->
+<div class="mobile-header-row2" id="mobileHeaderRow2">
+  <span id="mobilePageTitle" style="font-size:13px;font-weight:600;color:var(--text-primary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">장비 상태 대시보드</span>
+  <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+    <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="exportData()">📤</button>
+    <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="document.getElementById('importFileInputMobile').click()">📥</button>
+    <input type="file" id="importFileInputMobile" accept=".json" style="display:none" onchange="importData(this)">
+    <div class="notif-btn" style="width:30px;height:30px;font-size:14px">🔔<div class="notif-badge" style="width:12px;height:12px;font-size:7px">3</div></div>
+    <div class="user-chip" style="padding:3px 8px 3px 4px;cursor:pointer" onclick="openAccountSettings()">
+      <div class="user-avatar avatar-admin" id="headerAvatarMobile" style="width:22px;height:22px;font-size:10px">A</div>
+      <span id="headerNameMobile" style="font-size:11px;font-weight:500">관리자</span>
+    </div>
+    <button onclick="doLogout()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted);padding:4px" title="로그아웃">🚪</button>
+  </div>
+</div>
+
+<!-- 태블릿 드로어 오버레이 -->
+<div id="tabletDrawerOverlay" onclick="closeTabletDrawer()"
+     style="display:none;position:fixed;inset:0;z-index:350;background:rgba(15,23,42,0.4)"></div>
+<!-- 태블릿 사이드 드로어 -->
+<div id="tabletDrawer"
+     style="position:fixed;top:0;left:0;bottom:0;width:280px;z-index:360;
+            background:#fff;box-shadow:4px 0 24px rgba(0,0,0,0.15);
+            overflow-y:auto;transform:translateX(-100%);transition:transform 0.28s ease">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);background:#fff;position:sticky;top:0">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="logo-icon" style="width:28px;height:28px;font-size:11px">EX</div>
+      <span style="font-size:14px;font-weight:700">Equipment-X</span>
+    </div>
+    <button onclick="closeTabletDrawer()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);padding:4px">✕</button>
+  </div>
+  <div id="drawerUserInfo" style="padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg-panel)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="user-avatar avatar-admin" id="drawerAvatar" style="width:36px;height:36px;font-size:15px">A</div>
+      <div>
+        <div id="drawerName" style="font-size:13px;font-weight:600;color:var(--text-primary)">관리자</div>
+        <div id="drawerRole" style="font-size:11px;color:var(--text-muted)">관리자 권한</div>
+      </div>
+    </div>
+  </div>
+  <div id="tabletDrawerContent" style="padding:8px 0"></div>
+  <div style="padding:16px 18px;border-top:1px solid var(--border)">
+    <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="doLogout();closeTabletDrawer()">로그아웃</button>
+  </div>
+</div>
 
 <!-- MAIN CONTENT -->
 <main class="main">
@@ -1468,7 +1428,7 @@ class QRCode {
       <!-- 좌: AI 고장 분석 -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🔍 고장 원인 추적</div>
+          <div class="card-title">🔍 고장 원인 AI 검색</div>
           <div class="ai-badge"><div class="pulse-dot"></div> AI 분석</div>
         </div>
         <div class="card-body">
@@ -1508,26 +1468,165 @@ class QRCode {
 
   <!-- ===== 3D TWIN ===== -->
   <div class="view" id="view-twin">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🌐 반응형 3D 매뉴얼</div>
-        <div class="ai-badge"><div class="pulse-dot"></div> AI 연동</div>
+    <div class="content-grid">
+
+      <!-- 좌: 등록 매뉴얼 목록 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🌐 반응형 3D 매뉴얼</div>
+          <button class="btn btn-primary" onclick="openModal('twin3dAddModal')">+ 반응형 3D 매뉴얼 등록</button>
+        </div>
+
+        <!-- 장비 선택 필터 -->
+        <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+          <select class="form-select" id="twinFilterEq" style="width:auto;padding:6px 10px;font-size:13px" onchange="renderTwinList()">
+            <option value="">전체 장비</option>
+          </select>
+          <span id="twinCountBadge" style="font-size:12px;color:var(--text-muted)">0건</span>
+        </div>
+
+        <!-- 목록 테이블 -->
+        <table class="eq-table">
+          <thead>
+            <tr>
+              <th>대상 장비</th>
+              <th>매뉴얼명</th>
+              <th>URL</th>
+              <th>APK</th>
+              <th>등록일</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="twinListBody"></tbody>
+        </table>
+        <div id="twinEmptyState" style="padding:48px 20px;text-align:center;display:none">
+          <div style="font-size:40px;margin-bottom:12px">🌐</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:6px">등록된 3D 매뉴얼이 없습니다</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px">반응형 3D 매뉴얼 등록 버튼을 눌러 첫 매뉴얼을 등록하세요</div>
+          <button class="btn btn-primary" onclick="openModal('twin3dAddModal')">+ 첫 매뉴얼 등록하기</button>
+        </div>
       </div>
-      <div class="card-body">
-        <!-- 3D 매뉴얼 placeholder -->
-        <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:20px;position:relative;overflow:hidden">
-          <div id="twinCanvas" style="font-size:80px;animation:float 3s ease-in-out infinite">⚙️</div>
-          <div style="margin-top:16px;font-size:14px;color:var(--text-secondary)">CNC 밀링머신 #3 — Digital Twin</div>
-          <div style="margin-top:4px" class="tag tag-green">Live 연결</div>
-          <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px">
-            <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="showToast('🔄','모델 회전 중')">회전</button>
-            <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="showToast('🔍','확대 모드')">확대</button>
+
+      <!-- 우: 매뉴얼 실행 패널 -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">▶ 매뉴얼 실행</div></div>
+          <div class="card-body">
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">장비 선택</label>
+              <select class="form-select" id="twinRunEq" style="padding:7px 10px" onchange="onTwinEqSelect()">
+                <option value="">— 장비를 선택하세요 —</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+              <label class="form-label">매뉴얼 선택</label>
+              <select class="form-select" id="twinRunManual" style="padding:7px 10px">
+                <option value="">— 매뉴얼을 선택하세요 —</option>
+              </select>
+            </div>
+
+            <!-- 선택된 매뉴얼 정보 -->
+            <div id="twinRunInfo" style="display:none;background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+              <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px" id="twinRunInfoName"></div>
+              <div style="font-size:11px;color:var(--text-muted)" id="twinRunInfoUrl"></div>
+            </div>
+
+            <button class="btn btn-primary" style="width:100%;padding:10px;font-size:14px;gap:8px" onclick="runTwinManual()">
+              🌐 매뉴얼 실행
+            </button>
+            <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px">
+              URL 등록 시 새 탭에서 열립니다
+            </div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="twinModules"></div>
+
+        <!-- 최근 실행 이력 -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🕐 최근 실행</div></div>
+          <div id="twinRunHistory" style="padding:0 0 8px">
+            <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px">실행 이력 없음</div>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
+
+<!-- ====== 반응형 3D 매뉴얼 등록 모달 ====== -->
+<div class="modal-overlay" id="twin3dAddModal" onclick="if(event.target===this)closeModal('twin3dAddModal')">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">🌐 반응형 3D 매뉴얼 등록</div>
+      <button class="modal-close" onclick="closeModal('twin3dAddModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">대상 장비 <span style="color:var(--danger)">*</span></label>
+        <select class="form-select" id="twin_eq" style="padding:7px 10px">
+          <option value="">— 장비를 선택하세요 —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">매뉴얼명 <span style="color:var(--danger)">*</span></label>
+        <input class="form-input" id="twin_name" placeholder="예: CNC 밀링머신 조작 3D 가이드" style="padding:7px 10px">
+      </div>
+      <div class="form-group">
+        <label class="form-label">매뉴얼 URL
+          <span style="font-size:10px;color:var(--text-muted);font-weight:400;margin-left:4px">3D 뷰어 또는 반응형 사이트 주소</span>
+        </label>
+        <input class="form-input" id="twin_url" placeholder="https://example.com/3d-manual" style="padding:7px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">
+      </div>
+
+      <!-- APK 파일 등록 -->
+      <div class="form-group">
+        <label class="form-label">파일 등록
+          <span style="font-size:10px;color:var(--text-muted);font-weight:400;margin-left:4px">Unity 또는 Unreal Engine 제작 APK</span>
+        </label>
+        <div id="twin_apk_drop"
+             style="border:2px dashed var(--border-light);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s"
+             onclick="document.getElementById('twin_apk_input').click()"
+             ondragover="event.preventDefault();this.style.borderColor='var(--accent2)';this.style.background='rgba(59,123,246,0.05)'"
+             ondragleave="this.style.borderColor='var(--border-light)';this.style.background=''">
+          <div id="twin_apk_placeholder">
+            <div style="font-size:28px;margin-bottom:6px">📦</div>
+            <div style="font-size:13px;font-weight:500;color:var(--text-secondary)">APK 파일을 선택하거나 드래그하세요</div>
+            <div style="font-size:10px;color:var(--accent2);margin-top:5px;font-weight:500">Unity / Unreal Engine 빌드 (.apk)</div>
+          </div>
+          <div id="twin_apk_preview" style="display:none">
+            <div style="font-size:32px;margin-bottom:6px">📦</div>
+            <div id="twin_apk_name" style="font-size:13px;font-weight:600;color:var(--text-primary);word-break:break-all"></div>
+            <div id="twin_apk_size" style="font-size:11px;color:var(--text-muted);margin-top:3px"></div>
+            <div style="font-size:10px;color:var(--accent2);margin-top:3px">✅ APK 파일 등록됨</div>
+          </div>
+        </div>
+        <input type="file" id="twin_apk_input" accept=".apk,application/vnd.android.package-archive"
+               style="display:none" onchange="handleTwinApkFile(this)">
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button type="button" class="btn btn-ghost" style="flex:1;font-size:12px;padding:6px"
+                  onclick="document.getElementById('twin_apk_input').click()">📦 APK 파일 선택</button>
+          <button type="button" class="btn btn-ghost" id="twin_apk_clear_btn"
+                  style="font-size:12px;padding:6px;color:var(--danger);border-color:rgba(220,38,38,0.3);display:none"
+                  onclick="clearTwinApk()">✕ 삭제</button>
+        </div>
+        <div style="margin-top:8px;padding:8px 12px;background:rgba(59,123,246,0.06);border-radius:6px;font-size:11px;color:var(--accent2);line-height:1.6">
+          📱 APK 파일은 Android 기기에서 직접 설치하여 실행합니다.<br>
+          설치 전 기기 설정에서 <strong>"알 수 없는 소스"</strong> 허용이 필요합니다.
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">설명</label>
+        <textarea class="form-input" id="twin_desc" rows="2" placeholder="매뉴얼 내용 또는 사용 방법" style="padding:7px 10px;resize:none"></textarea>
+      </div>
+      <div id="twin3dAddError" style="background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--danger);display:none">
+        장비와 매뉴얼명은 필수 입력 항목입니다.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('twin3dAddModal')">취소</button>
+      <button class="btn btn-primary" onclick="addTwin3dManual()">등록</button>
+    </div>
+  </div>
+</div>
 
 </main>
 
@@ -3613,19 +3712,248 @@ function refreshAllViews() {
   renderManualLibrary();
   renderFaultMgmt();
   renderFaultLog();
+  renderTwinList();
   updateDashboardStats();
   initApiKeyUI();
 }
 
 /* ======== DATA (정적) ======== */
-const twinModulesData = [
-  {icon:'🔩',name:'주축 상태',val:'정상'},
-  {icon:'🌡️',name:'온도',val:'42°C'},
-  {icon:'⚡',name:'전력 소비',val:'3.2kW'},
-  {icon:'📳',name:'진동',val:'0.02mm'},
-  {icon:'🔧',name:'공구 수명',val:'78%'},
-  {icon:'⏱️',name:'가동 시간',val:'1,240h'},
-];
+/* ======== 반응형 3D 매뉴얼 ======== */
+let twin3dManuals = []; // { _uid, eqUid, eqName, name, url, desc, regDate }
+let _twinRunHistory = [];
+
+function renderTwinModules() { renderTwinList(); }
+
+function renderTwinList() {
+  // buildPayload/applyRecord 연동을 위해 twin3dManuals를 별도 관리
+  const filterEq = document.getElementById('twinFilterEq')?.value || '';
+  const list = filterEq
+    ? twin3dManuals.filter(m => m.eqName === filterEq)
+    : twin3dManuals;
+
+  const badge = document.getElementById('twinCountBadge');
+  if (badge) badge.textContent = `${list.length}건`;
+
+  const body  = document.getElementById('twinListBody');
+  const empty = document.getElementById('twinEmptyState');
+  if (!body) return;
+
+  if (list.length === 0) {
+    body.innerHTML = '';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  body.innerHTML = list.map(m => `
+    <tr>
+      <td style="font-size:13px;font-weight:500">${m.eqName}</td>
+      <td style="font-size:13px">${m.name}</td>
+      <td style="font-size:11px;color:var(--accent);font-family:'JetBrains Mono',monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${m.url ? `<a href="${m.url}" target="_blank" style="color:var(--accent);text-decoration:none">${m.url}</a>` : '<span style="color:var(--text-muted)">—</span>'}
+      </td>
+      <td style="font-size:11px">
+        ${m.apkName
+          ? `<span style="color:var(--accent2)" title="${m.apkName}">📦 ${m.apkName.length>16?m.apkName.slice(0,14)+'…':m.apkName}<br><span style="color:var(--text-muted)">${formatSize(m.apkSize)}</span></span>`
+          : '<span style="color:var(--text-muted)">—</span>'}
+      </td>
+      <td style="font-size:12px;color:var(--text-muted)">${m.regDate}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" onclick="runTwinByUid('${m._uid}')">▶ 실행</button>
+          <button class="btn btn-danger" style="padding:3px 8px;font-size:11px" onclick="deleteTwin3d('${m._uid}')">삭제</button>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  // 실행 패널 장비 목록 업데이트
+  _refreshTwinRunSelects();
+}
+
+/* ── 장비 필터 + 실행 셀렉트 업데이트 ── */
+function _refreshTwinRunSelects() {
+  const eqNames = [...new Set(twin3dManuals.map(m => m.eqName))].sort();
+
+  const filterSel = document.getElementById('twinFilterEq');
+  if (filterSel) {
+    const cur = filterSel.value;
+    filterSel.innerHTML = '<option value="">전체 장비</option>' +
+      eqNames.map(n => `<option value="${n}" ${n===cur?'selected':''}>${n}</option>`).join('');
+  }
+
+  const runSel = document.getElementById('twinRunEq');
+  if (runSel) {
+    const cur = runSel.value;
+    runSel.innerHTML = '<option value="">— 장비를 선택하세요 —</option>' +
+      eqNames.map(n => `<option value="${n}" ${n===cur?'selected':''}>${n}</option>`).join('');
+    onTwinEqSelect();
+  }
+}
+
+function onTwinEqSelect() {
+  const eqName = document.getElementById('twinRunEq')?.value;
+  const manSel = document.getElementById('twinRunManual');
+  const info   = document.getElementById('twinRunInfo');
+  if (!manSel) return;
+
+  const list = eqName ? twin3dManuals.filter(m => m.eqName === eqName) : [];
+  manSel.innerHTML = '<option value="">— 매뉴얼을 선택하세요 —</option>' +
+    list.map(m => `<option value="${m._uid}">${m.name}</option>`).join('');
+
+  if (info) info.style.display = 'none';
+  manSel.onchange = () => {
+    const uid = manSel.value;
+    const m   = twin3dManuals.find(x => x._uid === uid);
+    if (!m || !info) return;
+    info.style.display = '';
+    document.getElementById('twinRunInfoName').textContent = m.name;
+    document.getElementById('twinRunInfoUrl').textContent  = m.url || 'URL 없음';
+  };
+}
+
+/* ── 매뉴얼 실행 ── */
+function runTwinManual() {
+  const uid = document.getElementById('twinRunManual')?.value;
+  if (!uid) { showToast('⚠️', '장비와 매뉴얼을 선택해 주세요'); return; }
+  runTwinByUid(uid);
+}
+
+function runTwinByUid(uid) {
+  const m = twin3dManuals.find(x => x._uid === uid);
+  if (!m) return;
+  if (m.url) {
+    window.open(m.url, '_blank', 'noopener');
+  } else {
+    showToast('⚠️', '등록된 URL이 없습니다');
+    return;
+  }
+  // 실행 이력 기록
+  _twinRunHistory.unshift({ name: m.name, eqName: m.eqName, ts: Date.now() });
+  if (_twinRunHistory.length > 10) _twinRunHistory.length = 10;
+  _renderTwinRunHistory();
+  showToast('🌐', `${m.name} 실행 중…`);
+}
+
+function _renderTwinRunHistory() {
+  const el = document.getElementById('twinRunHistory');
+  if (!el) return;
+  if (_twinRunHistory.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px">실행 이력 없음</div>';
+    return;
+  }
+  el.innerHTML = _twinRunHistory.map((h, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;${i < _twinRunHistory.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
+      <span style="font-size:18px">🌐</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:var(--text-primary)">${h.name}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${h.eqName} · ${relativeTime(h.ts)}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ── APK 파일 처리 ── */
+let _twinApkFile = null;
+
+function handleTwinApkFile(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+
+  // 확장자 검증
+  if (!file.name.toLowerCase().endsWith('.apk')) {
+    showToast('⚠️', '.apk 파일만 등록할 수 있습니다');
+    input.value = '';
+    return;
+  }
+
+  _twinApkFile = file;
+
+  // 미리보기
+  document.getElementById('twin_apk_placeholder').style.display = 'none';
+  document.getElementById('twin_apk_preview').style.display     = '';
+  document.getElementById('twin_apk_name').textContent          = file.name;
+  document.getElementById('twin_apk_size').textContent          = formatSize(file.size);
+  document.getElementById('twin_apk_drop').style.borderColor    = 'var(--accent2)';
+  document.getElementById('twin_apk_drop').style.borderStyle    = 'solid';
+  document.getElementById('twin_apk_clear_btn').style.display   = '';
+  input.value = '';
+}
+
+function clearTwinApk() {
+  _twinApkFile = null;
+  document.getElementById('twin_apk_placeholder').style.display = '';
+  document.getElementById('twin_apk_preview').style.display     = 'none';
+  document.getElementById('twin_apk_drop').style.borderColor    = 'var(--border-light)';
+  document.getElementById('twin_apk_drop').style.borderStyle    = 'dashed';
+  document.getElementById('twin_apk_drop').style.background     = '';
+  document.getElementById('twin_apk_clear_btn').style.display   = 'none';
+  document.getElementById('twin_apk_input').value               = '';
+}
+function openTwin3dAddModal() {
+  const sel = document.getElementById('twin_eq');
+  if (sel) {
+    sel.innerHTML = '<option value="">— 장비를 선택하세요 —</option>' +
+      equipment.map(e => `<option value="${e._uid}">${e.name} (${e.id})</option>`).join('');
+  }
+  ['twin_name','twin_url','twin_desc'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  clearTwinApk();
+  document.getElementById('twin3dAddError').style.display = 'none';
+  openModal('twin3dAddModal');
+}
+
+/* ── 매뉴얼 등록 ── */
+function addTwin3dManual() {
+  const eqUid = document.getElementById('twin_eq')?.value;
+  const name  = document.getElementById('twin_name')?.value.trim();
+  const errEl = document.getElementById('twin3dAddError');
+
+  if (!eqUid || !name) { errEl.style.display = ''; return; }
+  errEl.style.display = 'none';
+
+  const eq = equipment.find(e => e._uid === eqUid);
+  const newItem = {
+    _uid:    'twin_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    eqUid,
+    eqName:  eq?.name || '',
+    name,
+    url:     document.getElementById('twin_url')?.value.trim() || '',
+    desc:    document.getElementById('twin_desc')?.value.trim() || '',
+    apkName: _twinApkFile ? _twinApkFile.name : '',
+    apkSize: _twinApkFile ? _twinApkFile.size : 0,
+    regDate: new Date().toISOString().slice(0,10),
+  };
+  twin3dManuals.unshift(newItem);
+  _twinApkFile = null;
+  _saveTwin3d();
+  closeModal('twin3dAddModal');
+  renderTwinList();
+  const apkInfo = newItem.apkName ? ` (APK: ${newItem.apkName})` : '';
+  showToast('🌐', `"${name}" 3D 매뉴얼 등록 완료${apkInfo}`);
+}
+
+/* ── 매뉴얼 삭제 ── */
+function deleteTwin3d(uid) {
+  const m = twin3dManuals.find(x => x._uid === uid);
+  if (!m) return;
+  if (!confirm(`"${m.name}" 매뉴얼을 삭제하시겠습니까?`)) return;
+  twin3dManuals = twin3dManuals.filter(x => x._uid !== uid);
+  _saveTwin3d();
+  renderTwinList();
+  showToast('🗑️', '삭제되었습니다');
+}
+
+/* ── localStorage 저장/로드 ── */
+function _saveTwin3d() {
+  try { localStorage.setItem('eqx_twin3d', JSON.stringify(twin3dManuals)); } catch {}
+}
+function _loadTwin3d() {
+  try {
+    const s = localStorage.getItem('eqx_twin3d');
+    if (s) twin3dManuals = JSON.parse(s);
+  } catch {}
+}
+_loadTwin3d();
 
 /* ======== ACTIVITY LOG ======== */
 const ACT_ICONS = {
@@ -6694,16 +7022,6 @@ function renderManualMgmt() {
   }
 }
 
-function renderTwinModules() {
-  document.getElementById('twinModules').innerHTML = twinModulesData.map(m=>`
-    <div class="stat-card" style="padding:14px;text-align:center">
-      <div style="font-size:24px">${m.icon}</div>
-      <div style="font-size:11px;color:var(--text-muted);margin:4px 0">${m.name}</div>
-      <div style="font-size:15px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace">${m.val}</div>
-    </div>
-  `).join('');
-}
-
 /* ======== DROPDOWN NAVIGATION ======== */
 const ADMIN_DD_IDS   = ['dd-assets','dd-safety-mgmt','dd-manual-mgmt','dd-fault-mgmt','dd-qr'];
 const ADMIN_LOCK_IDS = ['ddlock-assets','ddlock-safety-mgmt','ddlock-manual-mgmt','ddlock-fault-mgmt','ddlock-qr'];
@@ -6863,7 +7181,7 @@ const MOBILE_MENU_ITEMS = [
   ]},
   { section:'교육·AI', items:[
     { icon:'📖', label:'매뉴얼 AI 검색', id:'manual' },
-    { icon:'🔍', label:'고장 원인 추적', id:'fault' },
+    { icon:'🔍', label:'고장 원인 AI 검색', id:'fault' },
     { icon:'🌐', label:'반응형 3D 매뉴얼', id:'twin' },
   ]},
 ];
@@ -6913,6 +7231,91 @@ function closeMobileMenu() {
 function openSidebar()  { toggleMobileMenu(); }
 function closeSidebar() { closeMobileMenu(); }
 
+/* ======== TABLET DRAWER ======== */
+let _drawerOpen = false;
+
+function toggleTabletDrawer() {
+  _drawerOpen ? closeTabletDrawer() : openTabletDrawer();
+}
+
+function openTabletDrawer() {
+  _drawerOpen = true;
+  const drawer  = document.getElementById('tabletDrawer');
+  const overlay = document.getElementById('tabletDrawerOverlay');
+  if (!drawer) return;
+  if (currentUser) {
+    const isAdmin = currentRole === 'admin';
+    const av = document.getElementById('drawerAvatar');
+    if (av) {
+      av.textContent = currentUser.initial;
+      av.className   = 'user-avatar ' + (isAdmin ? 'avatar-admin' : 'avatar-user');
+      av.style.cssText = 'width:36px;height:36px;font-size:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;background:' + (isAdmin ? 'linear-gradient(135deg,#F59E0B,#EF4444)' : 'linear-gradient(135deg,#3B7BF6,#8B5CF6)');
+    }
+    const dn = document.getElementById('drawerName');
+    const dr = document.getElementById('drawerRole');
+    if (dn) dn.textContent = currentUser.displayName;
+    if (dr) dr.textContent = isAdmin ? '🛡️ 관리자 권한' : '👤 사용자';
+  }
+  _renderDrawerMenu();
+  drawer.style.display  = 'block';
+  overlay.style.display = 'block';
+  requestAnimationFrame(() => { drawer.style.transform = 'translateX(0)'; });
+}
+
+function closeTabletDrawer() {
+  _drawerOpen = false;
+  const drawer  = document.getElementById('tabletDrawer');
+  const overlay = document.getElementById('tabletDrawerOverlay');
+  if (!drawer) return;
+  drawer.style.transform = 'translateX(-100%)';
+  setTimeout(() => {
+    drawer.style.display  = 'none';
+    overlay.style.display = 'none';
+  }, 280);
+}
+
+function _renderDrawerMenu() {
+  const container = document.getElementById('tabletDrawerContent');
+  if (!container) return;
+  const isAdmin = currentRole === 'admin';
+  const sections = [
+    { label:'장비 현황', items:[
+      { icon:'📊', label:'장비 상태 대시보드', id:'dashboard' },
+      { icon:'📋', label:'장비별 이력 현황',   id:'safety' },
+    ]},
+    { label:'관리', items:[
+      { icon:'📅', label:'사용 예약',       id:'reservation' },
+      { icon:'🏷️', label:'장비 등록·관리',  id:'assets',       admin:true },
+      { icon:'✅', label:'점검기록 관리',   id:'safety-mgmt',  admin:true },
+      { icon:'📚', label:'매뉴얼 관리',     id:'manual-mgmt',  admin:true },
+      { icon:'🔧', label:'고장원인 관리',   id:'fault-mgmt',   admin:true },
+      { icon:'📷', label:'QR 생성·관리',    id:'qr',           admin:true },
+    ]},
+    { label:'교육·AI', items:[
+      { icon:'📖', label:'매뉴얼 AI 검색',    id:'manual' },
+      { icon:'🔍', label:'고장 원인 AI 검색', id:'fault' },
+      { icon:'🌐', label:'반응형 3D 매뉴얼',  id:'twin' },
+    ]},
+  ];
+  container.innerHTML = sections.map(sec => `
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.2px;padding:10px 18px 4px">${sec.label}</div>
+      ${sec.items.map(item => {
+        const locked = item.admin && !isAdmin;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:11px 18px;cursor:${locked?'not-allowed':'pointer'};opacity:${locked?0.35:1};border-left:3px solid transparent;transition:background 0.1s"
+          ${!locked ? `onclick="goTo('${item.id}');closeTabletDrawer()"` : ''}
+          onmouseover="${!locked?"this.style.background='var(--accent-dim)';this.style.borderLeftColor='var(--accent)'":''}"
+          onmouseout="this.style.background='';this.style.borderLeftColor='transparent'">
+          <span style="font-size:16px;width:22px;text-align:center">${item.icon}</span>
+          <span style="font-size:13.5px;color:var(--text-secondary)">${item.label}</span>
+          ${locked ? '<span style="margin-left:auto;font-size:11px">🔒</span>' : ''}
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="height:1px;background:var(--border);margin:4px 14px"></div>
+  `).join('');
+}
+
 function goTo(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const view = document.getElementById('view-' + id);
@@ -6922,7 +7325,10 @@ function goTo(id) {
   updateDropdownActive(id);
 
   // 페이지 제목
-  document.getElementById('pageTitle').textContent = pageTitles[id] || id;
+  const title = pageTitles[id] || id;
+  document.getElementById('pageTitle').textContent       = title;
+  const mob = document.getElementById('mobilePageTitle');
+  if (mob) mob.textContent = title;
 
   // 바텀 네비 싱크
   const mapped = bottomNavMap[id] || 'dashboard';
@@ -6967,7 +7373,7 @@ const pageTitles = {
   dashboard:'장비 상태 대시보드', safety:'장비별 이력 현황',
   assets:'장비 등록·관리', reservation:'사용 예약', 'safety-mgmt':'점검기록 관리',
   'manual-mgmt':'매뉴얼 관리', 'fault-mgmt':'고장원인 관리',
-  qr:'QR 생성·관리', manual:'매뉴얼 검색 (AI)', fault:'고장 원인 추적 (AI)', twin:'반응형 3D 매뉴얼'
+  qr:'QR 생성·관리', manual:'매뉴얼 검색 (AI)', fault:'고장 원인 AI 검색', twin:'반응형 3D 매뉴얼'
 };
 
 const bottomNavMap = {
@@ -7027,6 +7433,7 @@ function openModal(id) {
     }
     document.getElementById('manualAddError').style.display = 'none';
   }
+  if (id === 'twin3dAddModal') { openTwin3dAddModal(); return; }
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
@@ -9426,6 +9833,11 @@ function doLogin() {
   document.getElementById('headerName').textContent   = acct.displayName;
   document.getElementById('headerRoleTag').textContent= isAdmin ? '관리자' : '사용자';
   document.getElementById('headerRoleTag').className  = 'user-role-tag ' + (isAdmin ? 'role-tag-admin' : 'role-tag-user');
+  // 모바일 2행 헤더
+  const mav = document.getElementById('headerAvatarMobile');
+  const mnm = document.getElementById('headerNameMobile');
+  if (mav) { mav.textContent = acct.initial; mav.className = 'user-avatar ' + (isAdmin ? 'avatar-admin' : 'avatar-user'); mav.style.cssText='width:22px;height:22px;font-size:10px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;background:'+(isAdmin?'linear-gradient(135deg,#F59E0B,#EF4444)':'linear-gradient(135deg,#3B7BF6,#8B5CF6)'); }
+  if (mnm) mnm.textContent = acct.displayName;
 
   // 드롭다운 잠금/해제
   updateDropdownLocks(isAdmin);
