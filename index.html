@@ -7511,7 +7511,7 @@ function goTo(id) {
 
   // 페이지 제목
   const title = pageTitles[id] || id;
-  document.getElementById('pageTitle').textContent       = title;
+  document.getElementById('pageTitle').textContent = title;
   const mob = document.getElementById('mobilePageTitle');
   if (mob) mob.textContent = title;
 
@@ -7525,6 +7525,10 @@ function goTo(id) {
     fab.style.display = (id === 'assets' && currentRole === 'admin' && window.innerWidth <= 768)
       ? 'flex' : 'none';
   }
+
+  // ── 태블릿 드로어 / 모바일 메뉴 자동 슬라이드아웃 ──
+  if (typeof _drawerOpen !== 'undefined' && _drawerOpen) closeTabletDrawer();
+  if (typeof closeMobileMenu === 'function') closeMobileMenu();
 }
 
 function setBottomNav(key) {
