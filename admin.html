@@ -3308,6 +3308,7 @@ class QRCode {
           <div id="acctDisplayNameBig" style="font-size:15px;font-weight:700;color:var(--text-primary)"></div>
           <div id="acctRoleBig" style="font-size:12px;color:var(--text-muted);margin-top:2px"></div>
           <div id="acctIdBig" style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-top:1px"></div>
+          <div id="acctOrgBig" style="font-size:11px;color:var(--accent);margin-top:2px;font-weight:500"></div>
         </div>
       </div>
 
@@ -3359,7 +3360,8 @@ class QRCode {
         <div id="acctListArea" style="margin-bottom:16px"></div>
         <!-- 신규 계정 추가 -->
         <div style="background:var(--bg-panel);border-radius:10px;padding:14px;border:1px solid var(--border)">
-          <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:10px">+ 신규 계정 추가</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:4px">+ 신규 계정 추가</div>
+          <div id="acctAddOrgHint" style="font-size:11px;color:var(--accent);margin-bottom:10px"></div>
           <div class="form-row" style="margin-bottom:8px">
             <div class="form-group" style="margin-bottom:0">
               <label class="form-label">아이디</label>
@@ -3554,10 +3556,21 @@ class QRCode {
    ▸ 로그아웃해도 데이터 유지, 다음 로그인 시 즉시 복원
    ================================================================ */
 
-const LS_DATA_KEY  = 'eqx_data';
-const LS_VER_KEY   = 'eqx_ver';
-const LS_FILES_KEY = 'eqx_files';
-const LS_DB_CFG    = 'eqx_db_cfg';   // MySQL 설정 저장
+/* ── 조직(사용처) 기반 데이터 키 ──────────────────
+   조직별로 완전히 분리된 localStorage 공간을 사용합니다.
+   같은 org 소속 계정끼리는 데이터를 공유하고,
+   다른 org는 서로의 데이터를 볼 수 없습니다.
+   ─────────────────────────────────────────────── */
+function _orgSlug() {
+  const org = currentUser?.org || 'default';
+  // 안전한 키 문자열로 변환 (공백/특수문자 → _)
+  return org.trim().replace(/[^a-zA-Z0-9가-힣]/g, '_').slice(0, 60) || 'default';
+}
+function getDataKey()  { return `eqx_data__${_orgSlug()}`; }
+function getVerKey()   { return `eqx_ver__${_orgSlug()}`; }
+function getFilesKey() { return `eqx_files__${_orgSlug()}`; }
+
+const LS_DB_CFG = 'eqx_db_cfg';   // MySQL 설정 저장 (조직 무관 — 앱 전역 설정)
 
 /* ── 인메모리 캐시 ── */
 let equipment    = [];
@@ -3811,13 +3824,13 @@ function _restoreFiles(light, files) {
   };
 }
 
-/* ── localStorage 저장 ── */
+/* ── localStorage 저장 (조직별 분리) ── */
 function lsSave(data) {
   try {
     data._ver = Date.now();
     const { light, files } = _stripFiles(data);
-    localStorage.setItem(LS_DATA_KEY, JSON.stringify(light));
-    localStorage.setItem(LS_VER_KEY,  String(data._ver));
+    localStorage.setItem(getDataKey(), JSON.stringify(light));
+    localStorage.setItem(getVerKey(),  String(data._ver));
     try {
       if (Object.keys(files).length > 0) {
         const existFiles = _loadFiles();
@@ -3830,7 +3843,7 @@ function lsSave(data) {
         );
         const cleaned = {};
         for (const k of Object.keys(merged)) { if (validKeys.has(k)) cleaned[k] = merged[k]; }
-        localStorage.setItem(LS_FILES_KEY, JSON.stringify(cleaned));
+        localStorage.setItem(getFilesKey(), JSON.stringify(cleaned));
       }
     } catch (fe) { console.warn('파일 저장 실패:', fe); }
     return true;
@@ -3838,7 +3851,7 @@ function lsSave(data) {
     if (e.name === 'QuotaExceededError') {
       try {
         const { light } = _stripFiles(data);
-        localStorage.setItem(LS_DATA_KEY, JSON.stringify(light));
+        localStorage.setItem(getDataKey(), JSON.stringify(light));
         setSyncStatus('err', '저장됨 (파일 용량 초과)');
         showToast('⚠️', '저장공간이 부족합니다.');
         return true;
@@ -3849,12 +3862,12 @@ function lsSave(data) {
 }
 
 function _loadFiles() {
-  try { return JSON.parse(localStorage.getItem(LS_FILES_KEY) || '{}'); } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem(getFilesKey()) || '{}'); } catch { return {}; }
 }
 
 function lsLoad() {
   try {
-    const raw = localStorage.getItem(LS_DATA_KEY);
+    const raw = localStorage.getItem(getDataKey());
     if (!raw) return null;
     const light = JSON.parse(raw);
     return _restoreFiles(light, _loadFiles());
@@ -3874,7 +3887,7 @@ function applyRecord(rec) {
 }
 
 function buildPayload() {
-  return { equipment, reservations, historyData, safetyItems, qrData, activityLog, manualDocs, faultRecords };
+  return { equipment, reservations, historyData, safetyItems, qrData, activityLog, manualDocs, faultRecords, _org: currentUser?.org || 'default' };
 }
 
 /* ══════════════════════════════════════════════════
@@ -9867,6 +9880,8 @@ function openAccountSettings() {
     const id = Object.keys(ACCOUNTS).find(k => ACCOUNTS[k] === currentUser) || '';
     idEl.textContent = `ID: ${id}`;
   }
+  const orgEl = document.getElementById('acctOrgBig');
+  if (orgEl) orgEl.textContent = `🏢 ${currentUser.org || '미지정 조직'}`;
 
   // 내 계정 탭 필드 초기화
   const nameInput = document.getElementById('acctNewName');
@@ -9957,12 +9972,20 @@ function renderAccountList() {
   const area = document.getElementById('acctListArea');
   if (!area) return;
   const roleLabel = { admin:'🛡️ 관리자', user:'👤 사용자' };
-  const myId = Object.keys(ACCOUNTS).find(k => ACCOUNTS[k] === currentUser);
+  const myId  = Object.keys(ACCOUNTS).find(k => ACCOUNTS[k] === currentUser);
+  const myOrg = currentUser?.org;
+
+  const orgHint = document.getElementById('acctAddOrgHint');
+  if (orgHint) orgHint.textContent = `🏢 "${myOrg || '미지정 조직'}" 소속으로 추가됩니다`;
+
+  // 같은 조직 소속 계정만 표시 (조직 간 정보 격리)
+  const sameOrgEntries = Object.entries(ACCOUNTS).filter(([, acct]) => acct.org === myOrg);
 
   area.innerHTML = `
-    <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:8px">등록된 계정 (${Object.keys(ACCOUNTS).length}개)</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:4px">🏢 ${myOrg || '미지정 조직'} 소속 계정 (${sameOrgEntries.length}개)</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">다른 조직의 계정 정보는 표시되지 않습니다</div>
     <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
-      ${Object.entries(ACCOUNTS).map(([id, acct], i, arr) => `
+      ${sameOrgEntries.map(([id, acct], i, arr) => `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;${i < arr.length-1 ? 'border-bottom:1px solid var(--border)' : ''}">
           <div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
             background:${acct.role==='admin'?'linear-gradient(135deg,#F59E0B,#EF4444)':'linear-gradient(135deg,#3B7BF6,#8B5CF6)'}">
@@ -10006,7 +10029,7 @@ function addNewAccount() {
   if (!initial) return showMsg('이니셜을 입력하세요', false);
   if (!pw || pw.length < 4) return showMsg('비밀번호는 4자 이상 입력하세요', false);
 
-  ACCOUNTS[id] = { password: pw, role, displayName: name, initial };
+  ACCOUNTS[id] = { password: pw, role, displayName: name, initial, org: currentUser?.org || 'default' };
   _saveAccounts();
 
   // 입력 초기화
@@ -10014,7 +10037,7 @@ function addNewAccount() {
     const el = document.getElementById(fid); if (el) el.value = '';
   });
 
-  showMsg(`✅ "${name}" 계정이 추가되었습니다`, true);
+  showMsg(`✅ "${name}" 계정이 "${currentUser?.org||'default'}" 조직에 추가되었습니다`, true);
   renderAccountList();
 }
 
@@ -10098,10 +10121,10 @@ function submitSignup() {
 }
 
 const ACCOUNTS = {
-  admin: { password: 'admin123', role: 'admin', displayName: '김관리자', initial: '관' },
-  admin2: { password: 'admin123', role: 'admin', displayName: '이관리자', initial: '이' },
-  user01: { password: 'user123', role: 'user', displayName: '박사용자', initial: '박' },
-  user02: { password: 'user123', role: 'user', displayName: '최사용자', initial: '최' },
+  admin:  { password: 'admin123', role: 'admin', displayName: '김관리자', initial: '관', org: 'DEMO-테스트기관' },
+  admin2: { password: 'admin123', role: 'admin', displayName: '이관리자', initial: '이', org: 'DEMO-테스트기관' },
+  user01: { password: 'user123',  role: 'user',  displayName: '박사용자', initial: '박', org: 'DEMO-테스트기관' },
+  user02: { password: 'user123',  role: 'user',  displayName: '최사용자', initial: '최', org: 'DEMO-테스트기관' },
 };
 _loadAccounts(); // 저장된 신규가입 계정 병합 (ACCOUNTS 선언 이후 호출)
 
