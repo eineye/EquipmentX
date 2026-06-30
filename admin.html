@@ -198,15 +198,14 @@ const _QR = (() => {
     }
 
     const { mat, N } = result;
-    const quiet  = 4; // 여백 모듈 수
+    const quiet  = 1; // 여백 모듈 수 (표준 정사각형 스타일에 맞춰 최소화)
     const total  = N + quiet * 2;
     const cell   = Math.floor(size / total);
     const canvas = document.createElement('canvas');
     const px     = cell * total;
     canvas.width  = px;
     canvas.height = px;
-    canvas.style.display      = 'block';
-    canvas.style.borderRadius = '8px';
+    canvas.style.display = 'block';
 
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
@@ -1264,7 +1263,10 @@ class QRCode {
       <div class="card">
         <div class="card-header">
           <div class="card-title">📷 QR 코드 목록</div>
-          <button class="btn btn-primary" onclick="openQRModal()">+ QR 생성</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" style="border-color:var(--accent2);color:var(--accent2)" onclick="openQRScanModal()">📸 QR 스캔</button>
+            <button class="btn btn-primary" onclick="openQRModal()">+ QR 생성</button>
+          </div>
         </div>
         <table class="eq-table">
           <thead>
@@ -3397,6 +3399,48 @@ class QRCode {
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('accountModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== QR 스캔 모달 ====== -->
+<div class="modal-overlay" id="qrScanModal" onclick="if(event.target===this)closeQRScanModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">📸 QR 코드 스캔</div>
+      <button class="modal-close" onclick="closeQRScanModal()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+
+      <!-- 카메라 미리보기 영역 -->
+      <div id="qrScanCamArea" style="position:relative;background:#000;border-radius:12px;overflow:hidden;margin-bottom:14px">
+        <video id="qrScanVideo" autoplay playsinline muted style="width:100%;display:block;border-radius:12px"></video>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:60%;aspect-ratio:1;border:3px solid var(--accent);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,0.35)"></div>
+        </div>
+      </div>
+
+      <!-- 상태 메시지 -->
+      <div id="qrScanStatus" style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">카메라를 QR 코드에 비춰주세요</div>
+
+      <!-- 미지원 안내 -->
+      <div id="qrScanUnsupported" style="display:none;padding:20px;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.2);border-radius:10px;font-size:13px;color:var(--warn);line-height:1.7">
+        ⚠️ 이 브라우저는 카메라 QR 스캔을 지원하지 않습니다.<br>
+        <strong>Chrome (Android)</strong> 또는 <strong>최신 Edge</strong> 브라우저를 사용해 주세요.<br><br>
+        대신 QR 코드 목록에서 <strong>"보기"</strong> 버튼으로 등록 정보를 바로 확인할 수 있습니다.
+      </div>
+
+      <!-- 대체 — 파일에서 QR 이미지 업로드 -->
+      <div style="margin-top:8px">
+        <input type="file" id="qrScanFileInput" accept="image/*" capture="environment" style="display:none" onchange="handleQRScanFile(this.files[0])">
+        <button class="btn btn-ghost" style="width:100%;font-size:12px" onclick="document.getElementById('qrScanFileInput').click()">
+          🖼️ 사진으로 QR 인식 (사진 촬영 / 갤러리 선택)
+        </button>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeQRScanModal()">닫기</button>
     </div>
   </div>
 </div>
@@ -6728,6 +6772,132 @@ function renderQR() {
   });
 }
 
+/* ════════════════════════════════════════
+   QR 코드 스캔 (카메라 / 이미지 업로드)
+   ════════════════════════════════════════ */
+let _qrScanStream  = null;
+let _qrScanTimer   = null;
+let _qrDetector     = null;
+
+async function openQRScanModal() {
+  openModal('qrScanModal');
+  document.getElementById('qrScanStatus').textContent = '카메라를 QR 코드에 비춰주세요';
+  document.getElementById('qrScanUnsupported').style.display = 'none';
+  document.getElementById('qrScanCamArea').style.display = '';
+
+  // BarcodeDetector 미지원 → 카메라 영역 숨기고 안내
+  if (!('BarcodeDetector' in window)) {
+    document.getElementById('qrScanCamArea').style.display = 'none';
+    document.getElementById('qrScanUnsupported').style.display = '';
+    return;
+  }
+
+  try {
+    _qrDetector = new BarcodeDetector({ formats: ['qr_code'] });
+  } catch {
+    document.getElementById('qrScanCamArea').style.display = 'none';
+    document.getElementById('qrScanUnsupported').style.display = '';
+    return;
+  }
+
+  try {
+    _qrScanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    const video = document.getElementById('qrScanVideo');
+    video.srcObject = _qrScanStream;
+    await video.play();
+    _startQRScanLoop(video);
+  } catch (e) {
+    document.getElementById('qrScanStatus').textContent = '⚠️ 카메라 접근 권한이 필요합니다';
+    document.getElementById('qrScanCamArea').style.display = 'none';
+    document.getElementById('qrScanUnsupported').style.display = '';
+    document.getElementById('qrScanUnsupported').innerHTML =
+      '⚠️ 카메라를 사용할 수 없습니다.<br>브라우저 설정에서 카메라 권한을 허용해 주세요.<br><br>대신 아래 "사진으로 QR 인식"을 사용할 수 있습니다.';
+  }
+}
+
+function _startQRScanLoop(video) {
+  clearInterval(_qrScanTimer);
+  _qrScanTimer = setInterval(async () => {
+    if (!_qrDetector || video.readyState < 2) return;
+    try {
+      const codes = await _qrDetector.detect(video);
+      if (codes.length > 0) {
+        const value = codes[0].rawValue;
+        clearInterval(_qrScanTimer);
+        _onQRScanSuccess(value);
+      }
+    } catch { /* 프레임 디코딩 실패는 무시하고 계속 시도 */ }
+  }, 400);
+}
+
+function closeQRScanModal() {
+  clearInterval(_qrScanTimer);
+  if (_qrScanStream) {
+    _qrScanStream.getTracks().forEach(t => t.stop());
+    _qrScanStream = null;
+  }
+  closeModal('qrScanModal');
+}
+
+/* ── 사진 업로드로 QR 인식 (카메라 미지원 브라우저 대체) ── */
+async function handleQRScanFile(file) {
+  if (!file) return;
+  document.getElementById('qrScanStatus').textContent = '🔍 이미지에서 QR 코드 인식 중…';
+
+  try {
+    const bitmap = await createImageBitmap(file);
+
+    if ('BarcodeDetector' in window) {
+      const detector = _qrDetector || new BarcodeDetector({ formats: ['qr_code'] });
+      const codes = await detector.detect(bitmap);
+      if (codes.length > 0) {
+        _onQRScanSuccess(codes[0].rawValue);
+        return;
+      }
+    }
+    document.getElementById('qrScanStatus').textContent = '⚠️ 이미지에서 QR 코드를 찾지 못했습니다. 다시 시도해 주세요.';
+  } catch (e) {
+    document.getElementById('qrScanStatus').textContent = `⚠️ 인식 실패: ${e.message}`;
+  }
+}
+
+/* ── QR 스캔 성공 → 등록된 장비 정보 팝업 ── */
+function _onQRScanSuccess(value) {
+  closeQRScanModal();
+
+  // URL에서 eq 파라미터 추출 (?eq=장비ID) 또는 eqx:장비ID 형식
+  let eqId = null;
+  try {
+    if (value.startsWith('eqx:')) {
+      eqId = value.slice(4);
+    } else {
+      const u = new URL(value);
+      eqId = u.searchParams.get('eq');
+    }
+  } catch { /* URL 파싱 실패 시 원본 값을 그대로 ID로 시도 */ }
+  if (!eqId) eqId = value;
+
+  // 등록된 QR 데이터에서 매칭되는 항목 찾기
+  const qrIdx = qrData.findIndex(q => q.id === eqId || q.content === value);
+  if (qrIdx >= 0) {
+    openQRViewer(qrIdx);
+    showToast('📷', 'QR 스캔 완료 — 등록 정보를 표시합니다');
+    return;
+  }
+
+  // QR 목록엔 없지만 장비 자체는 등록되어 있는 경우
+  const eq = equipment.find(e => e.id === eqId);
+  if (eq) {
+    openEqDetail(eq._uid);
+    showToast('📷', 'QR 스캔 완료 — 장비 정보를 표시합니다');
+    return;
+  }
+
+  showToast('⚠️', `등록된 장비를 찾을 수 없습니다 (${eqId})`);
+}
+
 function openQRViewer(idx) {
   const q = qrData[idx];
   if (!q) return;
@@ -6742,24 +6912,37 @@ function openQRViewer(idx) {
 
   const eq = equipment.find(e => e._uid === q.eqUid) || {};
   const statusMap = { ok:'✅ 정상', err:'🔴 고장', repair:'🔧 수리중', calib:'🔵 교정대기' };
+
+  const rows = [
+    ['장비명',     q.eq],
+    ['관리번호',   eq.id || q.id],
+    ['제조사',     eq.maker || '—'],
+    ['모델명',     eq.model || '—'],
+    ['시리얼번호', eq.serial || '—'],
+    ['설치위치',   eq.loc || '—'],
+    ['관리부서',   eq.dept || '—'],
+    ['책임자(정)', eq.professor || '—'],
+    ['책임자(부)', eq.researcher || '—'],
+    ['장비 상태',  statusMap[eq.status] || '—'],
+    ['QR 생성일',  q.date],
+  ];
+
   document.getElementById('qrViewerInfo').innerHTML = `
     <table style="width:100%;border-collapse:collapse;font-size:12px">
-      ${[
-        ['장비명', q.eq],
-        ['자산번호', q.id],
-        ['제조사', eq.maker || '—'],
-        ['모델명', eq.model || '—'],
-        ['설치위치', eq.loc || '—'],
-        ['책임교수', eq.professor || '—'],
-        ['장비상태', statusMap[eq.status] || '—'],
-        ['QR 생성일', q.date],
-      ].map(([k,v]) => `
+      ${rows.map(([k,v]) => `
         <tr>
-          <td style="color:#666;padding:3px 8px 3px 0;width:72px;vertical-align:top">${k}</td>
+          <td style="color:#666;padding:3px 8px 3px 0;width:78px;vertical-align:top">${k}</td>
           <td style="color:#111;font-weight:500;padding:3px 0">${v}</td>
         </tr>
       `).join('')}
     </table>
+    ${q.content ? `
+    <div style="margin-top:10px;padding:8px 10px;background:#f5f7fa;border-radius:6px;font-size:10px;color:#666;word-break:break-all;line-height:1.5">
+      📱 QR 연결 주소<br>
+      ${q.content.startsWith('http')
+        ? `<a href="${q.content}" target="_blank" style="color:var(--accent2)">${q.content}</a>`
+        : `<span style="font-family:'JetBrains Mono',monospace">${q.content}</span>`}
+    </div>` : ''}
   `;
   openModal('qrViewerModal');
 }
