@@ -3519,7 +3519,7 @@ class QRCode {
           </div>
         </div>
         <div id="qrModeDesc" style="font-size:11px;color:var(--text-muted);margin-top:8px;padding:8px 10px;background:var(--bg-panel);border-radius:6px;line-height:1.6">
-          📋 장비 정보가 QR에 직접 저장됩니다. 스마트폰 기본 카메라로 스캔하면 <strong>앱 설치·로그인 없이</strong> 바로 텍스트로 정보가 표시됩니다. 현장 작업자에게 추천합니다.
+          📋 핵심 정보(장비명·관리번호·책임자·상태, 165자 이내)만 QR에 저장됩니다. 스마트폰 기본 카메라로 스캔하면 <strong>앱 설치·로그인 없이</strong> 바로 텍스트로 확인할 수 있습니다.
         </div>
       </div>
 
@@ -6638,7 +6638,7 @@ function setQrMode(mode) {
   if (mode === 'info') {
     infoBtn.style.border = '2px solid var(--accent)'; infoBtn.style.background = 'var(--accent-dim)';
     urlBtn.style.border  = '2px solid var(--border)';  urlBtn.style.background  = 'var(--bg-panel)';
-    desc.innerHTML = '📋 장비 정보가 QR에 직접 저장됩니다. 스마트폰 기본 카메라로 스캔하면 <strong>앱 설치·로그인 없이</strong> 바로 텍스트로 정보가 표시됩니다. 현장 작업자에게 추천합니다.';
+    desc.innerHTML = '📋 핵심 정보(장비명·관리번호·책임자·상태, 165자 이내)만 QR에 저장됩니다. 스마트폰 기본 카메라로 스캔하면 <strong>앱 설치·로그인 없이</strong> 바로 텍스트로 확인할 수 있습니다.';
   } else {
     urlBtn.style.border  = '2px solid var(--accent2)'; urlBtn.style.background  = 'rgba(59,123,246,0.08)';
     infoBtn.style.border = '2px solid var(--border)';  infoBtn.style.background = 'var(--bg-panel)';
@@ -6654,24 +6654,26 @@ function setQrMode(mode) {
    ─────────────────────────────────────────── */
 function _makeInfoText(eq) {
   const statusMap = { ok:'정상', err:'고장', repair:'수리중', calib:'교정대기' };
-  const cycleMap  = { weekly:'매주', monthly:'매월', quarterly:'분기(3개월)', biannual:'반기(6개월)', annual:'연1회', biennial:'2년1회', none:'해당없음' };
+  const person = eq.professor || eq.researcher || '—';
   const lines = [
-    `[Equipment-X 장비정보]`,
+    `[Equipment-X]`,
     `장비명: ${eq.name}`,
     `관리번호: ${eq.id}`,
+    `책임자: ${person}`,
+    `상태: ${statusMap[eq.status] || eq.status || '—'}`,
   ];
-  if (eq.maker)      lines.push(`제조사: ${eq.maker}`);
-  if (eq.model)      lines.push(`모델명: ${eq.model}`);
-  if (eq.serial)     lines.push(`시리얼: ${eq.serial}`);
-  if (eq.loc)        lines.push(`설치위치: ${eq.loc}`);
-  if (eq.dept)       lines.push(`관리부서: ${eq.dept}`);
-  if (eq.professor)  lines.push(`책임자(정): ${eq.professor}`);
-  if (eq.researcher) lines.push(`책임자(부): ${eq.researcher}`);
-  lines.push(`장비상태: ${statusMap[eq.status] || eq.status || '—'}`);
-  if (eq.inspCycle)  lines.push(`점검주기: ${cycleMap[eq.inspCycle] || eq.inspCycle}`);
-  if (eq.calibCycle) lines.push(`교정주기: ${cycleMap[eq.calibCycle] || eq.calibCycle}`);
-  lines.push(`문의: 관리부서 또는 시스템 관리자`);
-  return lines.join('\n');
+  let text = lines.join('\n');
+  // 165자 안전선 — 초과 시 책임자·상태부터 순차 생략
+  if (text.length > 165) {
+    text = [`[Equipment-X]`, `장비명: ${eq.name}`, `관리번호: ${eq.id}`, `책임자: ${person}`].join('\n');
+  }
+  if (text.length > 165) {
+    text = [`[Equipment-X]`, `장비명: ${eq.name}`, `관리번호: ${eq.id}`].join('\n');
+  }
+  if (text.length > 165) {
+    text = text.slice(0, 165);
+  }
+  return text;
 }
 
 function _getQrUrl(eqId) {
@@ -6745,7 +6747,7 @@ function previewQR() {
     if (_qrMode === 'info') {
       urlInfo.style.background = 'var(--accent-dim)';
       urlInfo.style.color      = 'var(--accent)';
-      urlInfo.innerHTML = `📋 QR 용량: 약 ${content.length}자 — 일반 카메라로 스캔 시 위 텍스트가 그대로 표시됩니다.`;
+      urlInfo.innerHTML = `📋 QR 텍스트: ${content.length}자 / 165자 — 일반 카메라로 스캔 시 위 텍스트가 그대로 표시됩니다.`;
     } else if (_qrBaseUrl) {
       urlInfo.style.background = 'rgba(59,123,246,0.08)';
       urlInfo.style.color      = 'var(--accent2)';
