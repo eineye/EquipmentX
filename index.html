@@ -623,6 +623,13 @@ class QRCode {
       <h1>Equipment-X</h1>
       <p>EQUIPMENT MANAGEMENT SYSTEM</p>
     </div>
+
+    <!-- QR 스캔으로 진입한 경우 안내 배너 -->
+    <div id="qrScanBanner" style="display:none;background:rgba(14,165,160,0.1);border:1px solid rgba(14,165,160,0.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;text-align:center">
+      <div style="font-size:13px;font-weight:600;color:var(--accent)">📷 QR 코드로 접속하셨습니다</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">로그인하면 해당 장비 정보를 바로 확인할 수 있습니다</div>
+    </div>
+
     <div class="login-card">
       <div class="login-tabs">
         <div class="login-tab active" id="tab-admin" onclick="switchTab('admin')">
@@ -3493,6 +3500,29 @@ class QRCode {
           <option value="">— 장비를 선택하세요 —</option>
         </select>
       </div>
+
+      <!-- QR 연결 방식 선택 -->
+      <div class="form-group">
+        <label class="form-label">QR 연결 방식 <span style="color:var(--danger)">*</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div onclick="setQrMode('info')" id="qrModeInfo"
+               style="border:2px solid var(--accent);background:var(--accent-dim);border-radius:10px;padding:10px;cursor:pointer;text-align:center;transition:all 0.15s">
+            <div style="font-size:20px">📋</div>
+            <div style="font-size:12px;font-weight:700;color:var(--accent);margin-top:2px">오프라인 정보형</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">앱·로그인 불필요</div>
+          </div>
+          <div onclick="setQrMode('url')" id="qrModeUrl"
+               style="border:2px solid var(--border);background:var(--bg-panel);border-radius:10px;padding:10px;cursor:pointer;text-align:center;transition:all 0.15s">
+            <div style="font-size:20px">🔗</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-top:2px">앱 연동형</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">로그인 후 팝업</div>
+          </div>
+        </div>
+        <div id="qrModeDesc" style="font-size:11px;color:var(--text-muted);margin-top:8px;padding:8px 10px;background:var(--bg-panel);border-radius:6px;line-height:1.6">
+          📋 장비 정보가 QR에 직접 저장됩니다. 스마트폰 기본 카메라로 스캔하면 <strong>앱 설치·로그인 없이</strong> 바로 텍스트로 정보가 표시됩니다. 현장 작업자에게 추천합니다.
+        </div>
+      </div>
+
       <!-- QR 미리보기 영역 -->
       <div id="qrModalPreview" style="display:none;margin-top:12px">
         <div style="background:#fff;border-radius:12px;padding:20px;text-align:center;border:1px solid var(--border)">
@@ -6594,13 +6624,62 @@ function saveQrBaseUrl(val) {
   localStorage.setItem('eqx_qr_base_url', _qrBaseUrl);
 }
 
+/* ── QR 생성 모드 (info: 오프라인 정보형 / url: 앱 연동형) ── */
+let _qrMode = localStorage.getItem('eqx_qr_mode') || 'info';
+
+function setQrMode(mode) {
+  _qrMode = mode;
+  localStorage.setItem('eqx_qr_mode', mode);
+
+  const infoBtn = document.getElementById('qrModeInfo');
+  const urlBtn  = document.getElementById('qrModeUrl');
+  const desc    = document.getElementById('qrModeDesc');
+
+  if (mode === 'info') {
+    infoBtn.style.border = '2px solid var(--accent)'; infoBtn.style.background = 'var(--accent-dim)';
+    urlBtn.style.border  = '2px solid var(--border)';  urlBtn.style.background  = 'var(--bg-panel)';
+    desc.innerHTML = '📋 장비 정보가 QR에 직접 저장됩니다. 스마트폰 기본 카메라로 스캔하면 <strong>앱 설치·로그인 없이</strong> 바로 텍스트로 정보가 표시됩니다. 현장 작업자에게 추천합니다.';
+  } else {
+    urlBtn.style.border  = '2px solid var(--accent2)'; urlBtn.style.background  = 'rgba(59,123,246,0.08)';
+    infoBtn.style.border = '2px solid var(--border)';  infoBtn.style.background = 'var(--bg-panel)';
+    desc.innerHTML = _qrBaseUrl
+      ? `🔗 스캔 시 앱(${_qrBaseUrl})으로 접속해 <strong>로그인 후</strong> 장비 상세 팝업이 자동으로 열립니다.`
+      : `⚠️ 사이트 URL이 설정되지 않았습니다. 아래 URL 설정 패널에서 먼저 입력하세요.`;
+  }
+  previewQR();
+}
+
+/* ── 오프라인 정보형 QR 텍스트 생성 ──
+   스마트폰 기본 카메라로 스캔 시 바로 읽을 수 있는 평문 텍스트
+   ─────────────────────────────────────────── */
+function _makeInfoText(eq) {
+  const statusMap = { ok:'정상', err:'고장', repair:'수리중', calib:'교정대기' };
+  const cycleMap  = { weekly:'매주', monthly:'매월', quarterly:'분기(3개월)', biannual:'반기(6개월)', annual:'연1회', biennial:'2년1회', none:'해당없음' };
+  const lines = [
+    `[Equipment-X 장비정보]`,
+    `장비명: ${eq.name}`,
+    `관리번호: ${eq.id}`,
+  ];
+  if (eq.maker)      lines.push(`제조사: ${eq.maker}`);
+  if (eq.model)      lines.push(`모델명: ${eq.model}`);
+  if (eq.serial)     lines.push(`시리얼: ${eq.serial}`);
+  if (eq.loc)        lines.push(`설치위치: ${eq.loc}`);
+  if (eq.dept)       lines.push(`관리부서: ${eq.dept}`);
+  if (eq.professor)  lines.push(`책임자(정): ${eq.professor}`);
+  if (eq.researcher) lines.push(`책임자(부): ${eq.researcher}`);
+  lines.push(`장비상태: ${statusMap[eq.status] || eq.status || '—'}`);
+  if (eq.inspCycle)  lines.push(`점검주기: ${cycleMap[eq.inspCycle] || eq.inspCycle}`);
+  if (eq.calibCycle) lines.push(`교정주기: ${cycleMap[eq.calibCycle] || eq.calibCycle}`);
+  lines.push(`문의: 관리부서 또는 시스템 관리자`);
+  return lines.join('\n');
+}
+
 function _getQrUrl(eqId) {
-  // URL 설정 있으면 URL?eq=ID, 없으면 장비 ID만
   if (_qrBaseUrl) {
     const base = _qrBaseUrl.endsWith('/') ? _qrBaseUrl : _qrBaseUrl + '/';
     return `${base}?eq=${encodeURIComponent(eqId)}`;
   }
-  return `eqx:${eqId}`; // URL 없을 때 장비 ID만 (로컬 전용)
+  return `eqx:${eqId}`;
 }
 
 function openQRModal() {
@@ -6614,11 +6693,12 @@ function openQRModal() {
   document.getElementById('qrModalPreview').style.display = 'none';
   document.getElementById('qrModalEmpty').style.display = 'block';
   document.getElementById('qrModalCanvas').innerHTML = '';
+  setQrMode(_qrMode); // 모드 UI 초기화
   openModal('qrModal');
 }
 
 function makeQRContent(eq) {
-  return _getQrUrl(eq.id);
+  return _qrMode === 'info' ? _makeInfoText(eq) : _getQrUrl(eq.id);
 }
 
 function buildQR(containerId, content, size) {
@@ -6659,15 +6739,21 @@ function previewQR() {
     상태: ${statusMap[eq.status] || eq.status}
   `;
 
-  // URL 안내
+  // 안내 영역
   const urlInfo = document.getElementById('qrModalUrlInfo');
   if (urlInfo) {
-    if (_qrBaseUrl) {
-      urlInfo.innerHTML = `📱 스캔 URL: <code style="word-break:break-all">${content}</code>`;
+    if (_qrMode === 'info') {
+      urlInfo.style.background = 'var(--accent-dim)';
+      urlInfo.style.color      = 'var(--accent)';
+      urlInfo.innerHTML = `📋 QR 용량: 약 ${content.length}자 — 일반 카메라로 스캔 시 위 텍스트가 그대로 표시됩니다.`;
+    } else if (_qrBaseUrl) {
+      urlInfo.style.background = 'rgba(59,123,246,0.08)';
+      urlInfo.style.color      = 'var(--accent2)';
+      urlInfo.innerHTML = `🔗 스캔 URL: <code style="word-break:break-all">${content}</code>`;
     } else {
-      urlInfo.innerHTML = `⚠️ 사이트 URL이 설정되지 않았습니다.<br>QR 생성 관리 화면에서 URL을 먼저 입력하면 스마트폰 스캔 시 장비 팝업으로 연결됩니다.`;
       urlInfo.style.background = 'rgba(217,119,6,0.08)';
       urlInfo.style.color      = 'var(--warn)';
+      urlInfo.innerHTML = `⚠️ 사이트 URL이 설정되지 않았습니다. QR 생성 관리 화면에서 URL을 먼저 입력하세요.`;
     }
   }
 }
@@ -6687,14 +6773,15 @@ function generateQR() {
     id:      eq.id,
     date:    new Date().toISOString().slice(0, 10),
     content: makeQRContent(eq),
+    mode:    _qrMode,
   };
   if (existing >= 0) qrData[existing] = newQR;
   else qrData.push(newQR);
 
   closeModal('qrModal');
-  logActivity('qr_add', `${eq.name} QR 생성`, `자산번호 ${eq.id}`);
+  logActivity('qr_add', `${eq.name} QR 생성`, `자산번호 ${eq.id} (${_qrMode === 'info' ? '오프라인 정보형' : '앱 연동형'})`);
   saveDB(() => renderQR());
-  showToast('📷', `${eq.name} QR 코드 생성 완료`);
+  showToast('📷', `${eq.name} QR 코드 생성 완료 (${_qrMode === 'info' ? '오프라인 정보형' : '앱 연동형'})`);
 }
 
 /* ── QR 스캔 시 자동 팝업 처리 (페이지 로드 시 실행) ── */
@@ -6704,8 +6791,18 @@ function handleQRScanOnLoad() {
     const eqId   = params.get('eq');
     if (!eqId) return;
 
-    // DB 로드 후 팝업 열기 (initDB 완료 콜백에서 처리)
     window._pendingQRScanId = decodeURIComponent(eqId);
+
+    // 로그인 화면에 QR 스캔 안내 배너 표시 (DOMContentLoaded 보장)
+    const showBanner = () => {
+      const banner = document.getElementById('qrScanBanner');
+      if (banner) banner.style.display = '';
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', showBanner);
+    } else {
+      showBanner();
+    }
   } catch { /* URL 파싱 실패 무시 */ }
 }
 
@@ -6716,19 +6813,16 @@ function _openQRScanPopupIfPending() {
 
   const eq = equipment.find(e => e.id === eqId);
   if (!eq) {
-    showToast('⚠️', `장비를 찾을 수 없습니다 (ID: ${eqId})`);
+    showToast('⚠️', `등록된 장비를 찾을 수 없습니다 (ID: ${eqId})`);
     return;
   }
 
-  // 로그인 화면 숨기고 대시보드로 이동
-  document.getElementById('loginScreen').classList.add('hidden');
+  // 대시보드로 이동 후 장비 상세 팝업 표시
   goTo('dashboard');
-
-  // 장비 상세 팝업 열기
   setTimeout(() => {
     openEqDetail(eq._uid);
-    showToast('📷', `QR 스캔: ${eq.name}`);
-  }, 400);
+    showToast('📷', `QR 스캔 — ${eq.name} 정보를 표시합니다`);
+  }, 350);
 }
 
 function renderQR() {
@@ -6747,7 +6841,12 @@ function renderQR() {
       <td style="width:60px;text-align:center;cursor:pointer" onclick="openQRViewer(${idx})" title="클릭하여 QR 보기">
         <div id="qr_thumb_${idx}" style="display:inline-block;background:#fff;padding:4px;border-radius:6px;width:48px;height:48px;overflow:hidden"></div>
       </td>
-      <td><strong>${q.eq}</strong></td>
+      <td>
+        <strong>${q.eq}</strong>
+        ${q.mode === 'info'
+          ? '<br><span class="tag tag-green" style="font-size:9px">📋 오프라인 정보형</span>'
+          : '<br><span class="tag tag-blue" style="font-size:9px">🔗 앱 연동형</span>'}
+      </td>
       <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent2)">${q.id}</td>
       <td style="font-size:12px;color:var(--text-muted)">${q.date}</td>
       <td style="display:flex;gap:4px">
@@ -6928,6 +7027,11 @@ function openQRViewer(idx) {
   ];
 
   document.getElementById('qrViewerInfo').innerHTML = `
+    <div style="margin-bottom:8px">
+      ${q.mode === 'info'
+        ? '<span class="tag tag-green">📋 오프라인 정보형 — 일반 카메라로 즉시 확인 가능</span>'
+        : '<span class="tag tag-blue">🔗 앱 연동형 — 로그인 후 자동 팝업</span>'}
+    </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px">
       ${rows.map(([k,v]) => `
         <tr>
@@ -6937,8 +7041,8 @@ function openQRViewer(idx) {
       `).join('')}
     </table>
     ${q.content ? `
-    <div style="margin-top:10px;padding:8px 10px;background:#f5f7fa;border-radius:6px;font-size:10px;color:#666;word-break:break-all;line-height:1.5">
-      📱 QR 연결 주소<br>
+    <div style="margin-top:10px;padding:8px 10px;background:#f5f7fa;border-radius:6px;font-size:10px;color:#666;word-break:break-all;line-height:1.5;white-space:pre-wrap">
+      ${q.mode === 'info' ? '📋 QR에 저장된 정보 (스캔 시 그대로 표시됨)' : '📱 QR 연결 주소'}<br>
       ${q.content.startsWith('http')
         ? `<a href="${q.content}" target="_blank" style="color:var(--accent2)">${q.content}</a>`
         : `<span style="font-family:'JetBrains Mono',monospace">${q.content}</span>`}
