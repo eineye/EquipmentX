@@ -287,6 +287,14 @@ class QRCode {
     padding: 20px;
   }
   #loginScreen.hidden { display: none; }
+
+  #signupScreen {
+    position: fixed; inset: 0; z-index: 999;
+    background: linear-gradient(135deg, #E8F4F8 0%, #F0F2F5 50%, #EEF2FF 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; overflow-y: auto;
+  }
+  #signupScreen.hidden { display: none; }
   .login-wrap { width: 100%; max-width: 420px; }
   .login-logo { text-align: center; margin-bottom: 36px; }
   .login-logo-icon {
@@ -656,64 +664,70 @@ class QRCode {
   </div>
 </div>
 
-<!-- ====== 회원가입 모달 ====== -->
-<div class="modal-overlay" id="signupModal" onclick="if(event.target===this)closeModal('signupModal')" style="z-index:1000">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-header">
-      <div class="modal-title">📝 신규 회원가입</div>
-      <button class="modal-close" onclick="closeModal('signupModal')">✕</button>
+<!-- ====== 회원가입 — 독립 풀스크린 화면 ====== -->
+<div id="signupScreen" class="hidden">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-logo-icon">EX</div>
+      <h1>회원가입</h1>
+      <p>EQUIPMENT MANAGEMENT SYSTEM</p>
     </div>
-    <div class="modal-body">
+    <div class="login-card">
+      <div class="login-body" style="max-height:78vh;overflow-y:auto">
 
-      <div class="form-group">
-        <label class="form-label">사용처 (회사 / 기관 / 학교) <span style="color:var(--danger)">*</span></label>
-        <input class="form-input" id="su_org" placeholder="예: ○○대학교 공학연구소" style="padding:8px 10px">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">아이디 (이메일) <span style="color:var(--danger)">*</span></label>
-        <input class="form-input" id="su_email" type="email" placeholder="example@email.com" style="padding:8px 10px">
-      </div>
-
-      <div class="form-row">
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">비밀번호 <span style="color:var(--danger)">*</span></label>
-          <input class="form-input" id="su_pw" type="password" placeholder="4자 이상" style="padding:8px 10px">
+        <div class="form-group">
+          <label class="form-label">사용처 (회사 / 기관 / 학교) <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" id="su_org" placeholder="예: ○○대학교 공학연구소" style="padding:9px 12px">
         </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">비밀번호 확인 <span style="color:var(--danger)">*</span></label>
-          <input class="form-input" id="su_pw2" type="password" placeholder="동일하게 입력" style="padding:8px 10px">
+
+        <div class="form-group">
+          <label class="form-label">아이디 (이메일) <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" id="su_email" type="email" placeholder="example@email.com" style="padding:9px 12px" autocomplete="username">
         </div>
+
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">비밀번호 <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" id="su_pw" type="password" placeholder="4자 이상" style="padding:9px 12px" autocomplete="new-password">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">비밀번호 확인 <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" id="su_pw2" type="password" placeholder="동일하게 입력" style="padding:9px 12px" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px">
+          <label class="form-label">권한 <span style="color:var(--danger)">*</span></label>
+          <select class="form-select" id="su_role" style="padding:9px 12px">
+            <option value="user">👤 사용자 — 조회 및 예약 가능</option>
+            <option value="admin">🛡️ 관리자 — 전체 기능 접근 가능</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">주소</label>
+          <input class="form-input" id="su_address" placeholder="예: 서울시 ○○구 ○○로 123" style="padding:9px 12px">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">전화번호</label>
+          <input class="form-input" id="su_phone" placeholder="예: 010-1234-5678" style="padding:9px 12px">
+        </div>
+
+        <div id="signupError" style="background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--danger);display:none;margin-top:8px"></div>
+
+        <button class="btn btn-primary" style="width:100%;padding:11px;font-size:14px;margin-top:16px" onclick="submitSignup()">
+          가입하기
+        </button>
+        <div style="text-align:center;margin-top:14px">
+          <span style="font-size:12px;color:var(--text-muted)">이미 계정이 있으신가요?</span>
+          <a onclick="closeSignupScreen()" style="font-size:12px;color:var(--accent);font-weight:600;cursor:pointer;margin-left:4px;text-decoration:underline">로그인으로 돌아가기</a>
+        </div>
+
       </div>
-
-      <div class="form-group" style="margin-top:12px">
-        <label class="form-label">권한 <span style="color:var(--danger)">*</span></label>
-        <select class="form-select" id="su_role" style="padding:8px 10px">
-          <option value="user">👤 사용자 — 조회 및 예약 가능</option>
-          <option value="admin">🛡️ 관리자 — 전체 기능 접근 가능</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">주소</label>
-        <input class="form-input" id="su_address" placeholder="예: 서울시 ○○구 ○○로 123" style="padding:8px 10px">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">전화번호</label>
-        <input class="form-input" id="su_phone" placeholder="예: 010-1234-5678" style="padding:8px 10px">
-      </div>
-
-      <div id="signupError" style="background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--danger);display:none;margin-top:8px"></div>
-
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('signupModal')">취소</button>
-      <button class="btn btn-primary" onclick="submitSignup()">가입하기</button>
     </div>
   </div>
-
-<!-- Sidebar Overlay (mobile) -->
+</div><!-- Sidebar Overlay (mobile) -->
 <div class="sidebar-overlay" id="sideOverlay" onclick="closeSidebar()"></div>
 
 <!-- ── 바텀 네비게이션 (모바일/태블릿) ── -->
@@ -10033,7 +10047,13 @@ function openSignupModal() {
   });
   document.getElementById('su_role').value = 'user';
   document.getElementById('signupError').style.display = 'none';
-  document.getElementById('signupModal').classList.add('open');
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('signupScreen').classList.remove('hidden');
+}
+
+function closeSignupScreen() {
+  document.getElementById('signupScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
 }
 
 function _showSignupError(msg) {
@@ -10069,7 +10089,7 @@ function submitSignup() {
   };
   _saveAccounts();
 
-  closeModal('signupModal');
+  closeSignupScreen();
   showToast('✅', `회원가입 완료! "${email}" 으로 로그인해 주세요.`);
 
   switchTab(role);
